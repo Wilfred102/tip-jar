@@ -1,6 +1,0 @@
-[network]
-   name = "mainnet"
-   
-   [accounts.deployer]
-    mnemonic = "blush battle sign surface round certain vivid wish crater assist fame fashion chuckle chair false ladder trick food void lounge awake toward before open"
-   
