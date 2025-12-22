@@ -3,7 +3,7 @@
 ;; - Minimum tip enforced on-chain
 ;; - Tracks total STX tipped and last 5 tippers
 
-(define-constant CREATOR 'ST3J2GVMMM2R07ZFBJDWTYEYAR8FZH5WKDTFJ9AHA)
+(define-constant CREATOR 'SP2VHX4R7QMX5SPMGV359YVB9V3GAC645P0Y5YG3C)
 (define-constant MIN_TIP u100000) ;; 0.1 STX in microSTX
 
 (define-data-var total-tips uint u0)
