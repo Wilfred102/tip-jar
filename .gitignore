@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+
+# Node / JS
+node_modules/
+yarn-error.log
+npm-debug.log*
+.pnpm-store/
+
+# Build outputs
+build/
+dist/
+out/
+.next/
+coverage/
+.nyc_output/
+
+# Stacks / Clarinet local state
+.clarinet/
+
+# Logs
+*.log
+logs/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.tmp/
+tmp/
+.cache/
