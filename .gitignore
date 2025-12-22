@@ -40,3 +40,4 @@ tmp/
 
 # Local settings
 settings/Devnet.toml
+settings/Mainnet.toml
