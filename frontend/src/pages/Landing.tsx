@@ -10,23 +10,56 @@ export default function Landing() {
           <div>STX Tip Jar</div>
         </div>
         <div className="actions">
+          <a href="#creators" className="btn btn-secondary">For creators</a>
           <Link to="/app" className="btn btn-primary">Enter App</Link>
         </div>
       </header>
 
-      <section className="hero">
+      <section className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
+        {/* Ambient aurora background */}
+        <div className="aurora aurora-1" aria-hidden="true" />
+        <div className="aurora aurora-2" aria-hidden="true" />
+        <div className="aurora aurora-3" aria-hidden="true" />
+
         <div className="hero-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="kicker">On-chain gratitude for creators</div>
-          <h1 className="title">Tip creators on Stacks, instantly</h1>
+          <div className="kicker">A home for music & art</div>
+          <h1 className="title gradient-text">Fuel the creators who move you</h1>
           <p className="subtitle">
-            STX Tip Jar lets anyone send STX tips to a creator using a secure, transparent
-            Clarity smart contract on Stacks mainnet. No accounts. No custodians. Just your
-            wallet and a simple on-chain tip.
+            Tip musicians, visual artists, filmmakers, designers, streamers and more — directly on
+            Stacks mainnet. Transparent, non-custodial, and instant. Your support, their freedom.
           </p>
           <div className="actions">
-            <Link to="/app" className="btn btn-primary">Start tipping</Link>
+            <Link to="/app" className="btn btn-primary btn-glow">Start tipping</Link>
             <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Learn about Stacks</a>
           </div>
+
+          {/* Creative tag marquee */}
+          <div className="marquee" style={{ marginTop: 20 }}>
+            <div className="marquee-track">
+              {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
+                <span key={tag} className="marquee-item pill">{tag}</span>
+              ))}
+              {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
+                <span key={tag + '-dup'} className="marquee-item pill">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Creator spotlights */}
+      <section id="creators" className="grid" style={{ marginTop: 24 }}>
+        <div className="spotlight-card">
+          <div className="emoji-badge">🎵</div>
+          <h3>Music makers</h3>
+          <p className="subtitle">Producers, vocalists, DJs and sound designers receiving direct, on-chain support.</p>
+          <Link to="/app" className="btn btn-secondary">Tip a musician</Link>
+        </div>
+        <div className="spotlight-card">
+          <div className="emoji-badge">🎨</div>
+          <h3>Visual artists</h3>
+          <p className="subtitle">Illustrators, painters, street artists, 3D and generative creators — no middlemen.</p>
+          <Link to="/app" className="btn btn-secondary">Tip an artist</Link>
         </div>
       </section>
 
@@ -34,17 +67,17 @@ export default function Landing() {
         <div className="card">
           <h3>How it works</h3>
           <ul className="list">
-            <li><strong>Smart contract</strong> holds logic: minimum tip, tracking, and routing to creator.</li>
-            <li><strong>WalletConnect</strong> lets you approve tips from wallets like Xverse.</li>
-            <li><strong>Trustless</strong>: tips are settled on-chain, viewable on the explorer.</li>
+            <li>🔐 <strong>Smart contract</strong> holds logic: minimum tip, tracking and routing.</li>
+            <li>🔗 <strong>WalletConnect</strong> lets you approve tips from wallets like Xverse.</li>
+            <li>🔎 <strong>Transparent</strong>: tips are settled on-chain, viewable on the explorer.</li>
           </ul>
         </div>
         <div className="card">
-          <h3>Why it’s safe</h3>
+          <h3>Why creators love it</h3>
           <ul className="list">
-            <li><strong>Open source</strong> Clarity code you can audit.</li>
-            <li><strong>No custody</strong>: funds go from your wallet directly to the creator.</li>
-            <li><strong>Immutable</strong> logic prevents tampering post-deploy.</li>
+            <li>👐 <strong>No custody</strong>: funds go from your wallet directly to the creator.</li>
+            <li>🧩 <strong>Composable</strong>: easy to embed in bios, link-in-bio, websites, streams.</li>
+            <li>🛡️ <strong>Open-source</strong> Clarity you can audit.</li>
           </ul>
         </div>
       </section>
@@ -60,8 +93,8 @@ export default function Landing() {
         </div>
         <div className="card">
           <h3>Get started</h3>
-          <p className="subtitle">You’ll connect your wallet on the next page, set an amount, and confirm the transaction.</p>
-          <Link to="/app" className="btn btn-primary">Enter App</Link>
+          <p className="subtitle">Connect your wallet on the next page, set an amount and confirm the transaction.</p>
+          <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
         </div>
       </section>
 
