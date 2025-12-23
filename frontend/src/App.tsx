@@ -30,7 +30,18 @@ function microToStxDisplay(micro: string | bigint): string {
   return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
 }
 
-type RecentTip = { index: number; tipper: string; amount: string };
+function shortAddr(addr: string, left = 6, right = 6) {
+  if (addr.length <= left + right + 3) return addr;
+  return `${addr.slice(0, left)}…${addr.slice(-right)}`;
+}
+
+type RecentTip = { 
+  index?: number; 
+  tipper: string; 
+  amountMicro: string; 
+  timeIso?: string; 
+  txid?: string 
+};
 
 export default function App() {
   const [connected, setConnected] = useState(false);
@@ -64,7 +75,46 @@ export default function App() {
     setTotalTips((json as any).value as string);
   }, [contractAddress, contractName]);
 
+  const fetchRecentViaApi = useCallback(async () => {
+    // Hiro mainnet API - recent contract-call txs for this contract
+    const base = 'https://api.hiro.so';
+    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=25`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`API ${r.status}`);
+    const data = await r.json();
+    const items = (data.results || [])
+      .filter((tx: any) => 
+        tx.tx_type === 'contract_call' && 
+        tx.tx_status === 'success' && 
+        tx.contract_call?.function_name === 'tip'
+      )
+      .map((tx: any) => {
+        const arg = tx.contract_call?.function_args?.[0];
+        // arg.repr like 'u100000' or fallback to hex parse omitted here
+        const repr: string = arg?.repr || 'u0';
+        const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
+        return {
+          tipper: tx.sender_address as string,
+          amountMicro,
+          timeIso: tx.burn_block_time_iso || tx.receipt_time_iso,
+          txid: tx.tx_id,
+        } as RecentTip;
+      });
+    // Sort by time desc
+    items.sort((a: any, b: any) => 
+      new Date(b.timeIso || 0).getTime() - new Date(a.timeIso || 0).getTime()
+    );
+    setRecent(items.slice(0, 10));
+  }, [contractAddress, contractName]);
+
   const fetchRecent = useCallback(async () => {
+    try {
+      await fetchRecentViaApi();
+      return;
+    } catch (e) {
+      console.warn('API fetch failed, using fallback:', e);
+      // Fallback to on-chain ring buffer (order unknown, best-effort)
+    }
     const out: RecentTip[] = [];
     for (let i = 0; i < 5; i++) {
       const res = await callReadOnlyFunction({
@@ -78,11 +128,15 @@ export default function App() {
       const json = cvToJSON(res as ClarityValue);
       if ((json as any).type === 'some') {
         const v = (json as any).value.value;
-        out.push({ index: i, tipper: v.tipper.value, amount: v.amount.value });
+        out.push({ 
+          index: i, 
+          tipper: v.tipper.value, 
+          amountMicro: v.amount.value 
+        });
       }
     }
     setRecent(out);
-  }, [contractAddress, contractName]);
+  }, [contractAddress, contractName, fetchRecentViaApi]);
 
   const refresh = useCallback(async () => {
     await Promise.all([fetchTotal(), fetchRecent()]);
@@ -191,9 +245,25 @@ export default function App() {
           {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
           {recent.length > 0 && (
             <ul className="list">
-              {recent.map((r) => (
-                <li key={r.index}>
-                  <code>{r.tipper}</code> — {microToStxDisplay(r.amount)} STX
+              {recent.map((r, idx) => (
+                <li key={r.txid || r.index || idx}>
+                  <code title={r.tipper}>{shortAddr(r.tipper)}</code>
+                  {' '}— {microToStxDisplay(r.amountMicro)} STX
+                  {r.timeIso && (
+                    <span style={{ color: '#94a3b8' }}>
+                      {' '}• {new Date(r.timeIso).toLocaleString()}
+                    </span>
+                  )}
+                  {r.txid && (
+                    <a
+                      href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ marginLeft: 8 }}
+                    >
+                      view
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
