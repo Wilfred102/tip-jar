@@ -1,19 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CONTRACT_ID, WALLETCONNECT_PROJECT_ID } from './config';
 import { StacksMainnet } from '@stacks/network';
-import {
-  openContractCall,
-  showConnect,
-  UserSession,
-} from '@stacks/connect';
-import {
-  callReadOnlyFunction,
-  ClarityValue,
-  contractPrincipalCV,
-  cvToJSON,
-  principalCV,
-  uintCV,
-} from '@stacks/transactions';
+import { openContractCall, showConnect, UserSession } from '@stacks/connect';
+import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 
 const network = new StacksMainnet();
 
@@ -22,17 +11,29 @@ function splitContractId(id: string) {
   return { contractAddress, contractName };
 }
 
-function microFromStx(input: string): bigint {
-  const n = Number(input);
-  if (!Number.isFinite(n) || n <= 0) return 0n;
-  return BigInt(Math.round(n * 1_000_00)) * 10n; // 1e6 avoiding FP overflow
+function parseStxToMicro(input: string): bigint {
+  // Safe decimal -> microSTX conversion supporting up to 6 decimals
+  const trimmed = input.trim();
+  if (!/^\d*(?:\.|\,)??\d*$/.test(trimmed)) return 0n;
+  const [whole, fracRaw = ''] = trimmed.replace(',', '.').split('.');
+  const frac = (fracRaw + '000000').slice(0, 6); // pad to 6
+  const w = whole === '' ? '0' : whole;
+  const microStr = `${w}${frac}`.replace(/^0+(?=\d)/, '');
+  return microStr === '' ? 0n : BigInt(microStr);
+}
+
+function microToStxDisplay(micro: string | bigint): string {
+  const m = typeof micro === 'string' ? BigInt(micro.replace(/^u/, '')) : micro;
+  const whole = m / 1000000n;
+  const frac = m % 1000000n;
+  const fracStr = frac.toString().padStart(6, '0').replace(/0+$/, '');
+  return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
 }
 
 type RecentTip = { index: number; tipper: string; amount: string };
 
 export default function App() {
   const [connected, setConnected] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
   const [amountStx, setAmountStx] = useState('0.1');
   const [totalTips, setTotalTips] = useState<string>('u0');
   const [recent, setRecent] = useState<RecentTip[]>([]);
@@ -43,13 +44,9 @@ export default function App() {
     showConnect({
       userSession: new UserSession({ appConfig: undefined as any }),
       appDetails: { name: 'STX Tip Jar', icon: window.location.origin + '/favicon.ico' },
-      onFinish: () => {
-        setConnected(true);
-      },
+      onFinish: () => setConnected(true),
       onCancel: () => {},
-      walletConnectOptions: {
-        projectId: WALLETCONNECT_PROJECT_ID,
-      },
+      walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       network,
     } as any);
   }, []);
@@ -98,7 +95,7 @@ export default function App() {
   const tip = useCallback(async () => {
     try {
       setLoading(true);
-      const micro = microFromStx(amountStx);
+      const micro = parseStxToMicro(amountStx);
       if (micro <= 0n) throw new Error('Enter a positive amount');
       await openContractCall({
         contractAddress,
@@ -112,7 +109,7 @@ export default function App() {
           setLoading(false);
         },
         onCancel: () => setLoading(false),
-        walletConnectOptions: { projectId: WALLETCONNECT_PROJECT_ID },
+        walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       } as any);
     } catch (e) {
       console.error(e);
@@ -121,54 +118,90 @@ export default function App() {
   }, [amountStx, contractAddress, contractName, refresh]);
 
   return (
-    <div style={{ maxWidth: 640, margin: '40px auto', fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
-      <h1>STX Tip Jar</h1>
-      <p>Contract: <code>{CONTRACT_ID}</code></p>
+    <div className="container">
+      <header className="nav">
+        <div className="logo">
+          <div className="logo-badge">💧</div>
+          <div>STX Tip Jar</div>
+        </div>
+        <div className="actions">
+          {!connected ? (
+            <button className="btn btn-primary" onClick={connect}>Connect Wallet</button>
+          ) : (
+            <button className="btn btn-secondary" onClick={refresh}>Refresh</button>
+          )}
+        </div>
+      </header>
 
-      <div style={{ margin: '16px 0' }}>
-        {!connected ? (
-          <button onClick={connect}>Connect Wallet (WalletConnect)</button>
-        ) : (
-          <span>Wallet connected</span>
-        )}
-      </div>
+      <section className="hero">
+        <div className="hero-card">
+          <div className="kicker">On-chain gratitude</div>
+          <h1 className="title">Send a tip on Stacks mainnet</h1>
+          <p className="subtitle">
+            Support the creator by sending STX. Tips go directly to the contract creator address.
+            Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
+          </p>
+          <div className="grid">
+            <div className="card">
+              <h3>Contract</h3>
+              <div className="label">Identifier</div>
+              <div style={{wordBreak: 'break-all'}}><code>{CONTRACT_ID}</code></div>
+            </div>
+            <div className="card">
+              <h3>Total Tips</h3>
+              <div className="label">All-time</div>
+              <div className="value">{microToStxDisplay(totalTips)} STX</div>
+            </div>
+          </div>
+          <div className="actions" style={{ marginTop: 16 }}>
+            {!connected ? (
+              <button className="btn btn-primary" onClick={connect}>Connect Wallet</button>
+            ) : (
+              <button className="btn btn-secondary" onClick={refresh}>Refresh stats</button>
+            )}
+          </div>
+        </div>
 
-      <div style={{ padding: 16, border: '1px solid #ddd', borderRadius: 8, marginTop: 16 }}>
-        <h3>Send a tip</h3>
-        <label>
-          Amount (STX):
+        <div className="hero-card">
+          <h3 style={{ marginTop: 0 }}>Send a tip</h3>
+          <div className="label">Amount (STX)</div>
           <input
+            className="input"
             type="number"
             min="0.1"
             step="0.1"
             value={amountStx}
             onChange={(e) => setAmountStx(e.target.value)}
-            style={{ marginLeft: 8 }}
           />
-        </label>
-        <button onClick={tip} disabled={loading} style={{ marginLeft: 12 }}>
-          {loading ? 'Sending…' : 'Tip'}
-        </button>
-      </div>
+          <div className="actions" style={{ marginTop: 12 }}>
+            <button className="btn btn-primary" onClick={tip} disabled={loading || !connected}>
+              {loading ? 'Sending…' : 'Tip now'}
+            </button>
+            {!connected && <button className="btn btn-secondary" onClick={connect}>Connect first</button>}
+          </div>
+          <p className="subtitle" style={{ marginTop: 12 }}>
+            Minimum tip is 0.1 STX. You will confirm the transaction in your wallet.
+          </p>
+        </div>
+      </section>
 
-      <div style={{ padding: 16, border: '1px solid #ddd', borderRadius: 8, marginTop: 16 }}>
-        <h3>Stats</h3>
-        <div><strong>Total tipped (µSTX):</strong> {totalTips}</div>
-        <button onClick={refresh} style={{ marginTop: 8 }}>Refresh</button>
-        <h4 style={{ marginTop: 16 }}>Recent (last 5)</h4>
-        {recent.length === 0 && <div>No tips yet.</div>}
-        <ul>
-          {recent.map((r) => (
-            <li key={r.index}>
-              <code>{r.tipper}</code> — {r.amount} µSTX
-            </li>
-          ))}
-        </ul>
-      </div>
+      <section style={{ marginTop: 24 }}>
+        <div className="card">
+          <h3>Recent tips</h3>
+          {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
+          {recent.length > 0 && (
+            <ul className="list">
+              {recent.map((r) => (
+                <li key={r.index}>
+                  <code>{r.tipper}</code> — {microToStxDisplay(r.amount)} STX
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
-      <p style={{ marginTop: 24, fontSize: 12, color: '#666' }}>
-        Minimum tip enforced on-chain is 0.1 STX (u100000 µSTX).
-      </p>
+      <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
     </div>
   );
 }
