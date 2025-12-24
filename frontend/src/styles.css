@@ -70,6 +70,12 @@ body {
   pointer-events: none;
 }
 
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0b1020;
+  box-shadow: 0 8px 24px rgba(57,255,20,0.25), 0 12px 36px rgba(0,255,163,0.2);
+}
+
 .nav {
   display: flex;
   align-items: center;
