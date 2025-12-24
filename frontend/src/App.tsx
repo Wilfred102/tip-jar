@@ -57,7 +57,10 @@ export default function App() {
     showConnect({
       userSession: new UserSession({ appConfig: undefined as any }),
       appDetails: { name: 'STX Tip Jar', icon: window.location.origin + '/favicon.ico' },
-      onFinish: () => setConnected(true),
+      onFinish: () => {
+        setConnected(true);
+        toast.success('Wallet connected');
+      },
       onCancel: () => {},
       walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       network,
