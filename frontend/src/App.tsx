@@ -53,15 +53,14 @@ export default function App() {
   const [wcModalOpen, setWcModalOpen] = useState(false);
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
 
-  const toast = (msg: string, type: 'info' | 'success' | 'error' = 'info') => {
+  const toast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 3000);
   };
 
-  // Simulate WalletConnect modal (in real app, this would use Reown AppKit)
   const openWalletConnectModal = useCallback(() => {
     setWcModalOpen(true);
-    toast('WalletConnect modal opened (simulated)', 'info');
+    toast('WalletConnect modal opened');
   }, []);
 
   const closeWalletConnectModal = useCallback(() => {
@@ -69,16 +68,16 @@ export default function App() {
   }, []);
 
   const connect = useCallback(() => {
-    toast('Connecting wallet...', 'info');
+    toast('Connecting wallet...');
     showConnect({
       userSession: new UserSession({ appConfig: undefined as any }),
       appDetails: { name: 'STX Tip Jar', icon: window.location.origin + '/favicon.ico' },
       onFinish: () => {
         setConnected(true);
-        toast('Wallet connected', 'success');
+        toast('Wallet connected');
       },
       onCancel: () => {
-        toast('Connection Canceled', 'info')
+        toast('Connection canceled')
       },
       walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       network,
@@ -180,231 +179,432 @@ export default function App() {
         onFinish: async () => {
           await refresh();
           setLoading(false);
-          toast('Tip sent successfully', 'success')
+          toast('Tip sent successfully')
         },
         onCancel: () => {
           setLoading(false);
-          toast('Tip canceled', 'info')
+          toast('Tip canceled')
         },
         walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       } as any);
     } catch (e: any) {
       console.error(e);
       setLoading(false);
-      toast(e?.message || 'Transaction failed', 'error')
+      toast(e?.message || 'Transaction failed')
     }
   }, [amountStx, contractAddress, contractName, refresh]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {toastMsg && (
-        <div className="fixed top-4 right-4 bg-purple-600 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in">
-          {toastMsg}
-        </div>
-      )}
-
-      {wcModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-purple-500/20">
-            <h3 className="text-2xl font-bold mb-4">WalletConnect</h3>
-            <p className="text-slate-300 mb-6">
-              This would open the WalletConnect modal for pairing with mobile wallets. 
-              In a real implementation, this uses Reown AppKit.
-            </p>
-            <div className="bg-white/5 rounded-lg p-4 mb-6">
-              <div className="text-sm text-slate-400 mb-2">Project ID</div>
-              <div className="font-mono text-xs break-all">{WALLETCONNECT_PROJECT_ID}</div>
-            </div>
-            <button 
-              onClick={closeWalletConnectModal}
-              className="w-full bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-medium transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       
-      <nav className="border-b border-white/10 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl">
-              💧
-            </div>
-            <span className="text-xl font-bold">Tip Jar</span>
+      <div style={{
+        minHeight: '100vh',
+        color: '#e5e7eb',
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        background: 'radial-gradient(1200px 800px at 10% 10%, rgba(57,255,20,0.08), transparent 40%), radial-gradient(1000px 700px at 90% 20%, rgba(0,255,163,0.08), transparent 40%), linear-gradient(160deg, #0f172a, #1e293b)'
+      }}>
+        {toastMsg && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #39FF14, #00FFA3)',
+            color: '#0b1020',
+            padding: '12px 24px',
+            borderRadius: '12px',
+            fontWeight: 600,
+            boxShadow: '0 8px 24px rgba(57,255,20,0.35)',
+            zIndex: 1000
+          }}>
+            {toastMsg}
           </div>
-          <div className="flex gap-2">
-            {!connected ? (
-              <>
-                <button 
-                  onClick={connect}
-                  className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-medium transition"
-                >
-                  Connect Wallet
-                </button>
-                <button 
-                  onClick={openWalletConnectModal}
-                  className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-lg font-medium transition"
-                >
-                  WalletConnect
-                </button>
-              </>
-            ) : (
+        )}
+
+        {wcModalOpen && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div className="spotlight-card" style={{ maxWidth: '500px', width: '100%' }}>
+              <div className="emoji-badge">🔗</div>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 12px' }}>WalletConnect</h3>
+              <p className="subtitle">
+                This opens WalletConnect for mobile wallet pairing. 
+                In production, this uses Reown AppKit.
+              </p>
+              <div className="card" style={{ marginBottom: '20px' }}>
+                <div className="label">Project ID</div>
+                <code style={{ fontSize: '11px', wordBreak: 'break-all' }}>{WALLETCONNECT_PROJECT_ID}</code>
+              </div>
               <button 
-                onClick={refresh}
-                className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-lg font-medium transition"
+                onClick={closeWalletConnectModal}
+                className="btn btn-primary btn-glow"
+                style={{ width: '100%' }}
               >
-                Refresh
+                Close
               </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <div className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-3">
-            On-chain gratitude
-          </div>
-          <h1 className="text-5xl font-bold mb-4">
-            Send a tip on Stacks mainnet
-          </h1>
-          <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-            Support the creator by sending STX. Tips go directly to the contract creator address.
-            Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-            <h3 className="text-xl font-bold mb-4">Contract</h3>
-            <div className="text-sm text-slate-400 mb-2">Identifier</div>
-            <div className="bg-black/30 p-3 rounded font-mono text-sm break-all">
-              {CONTRACT_ID}
             </div>
           </div>
+        )}
 
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-            <h3 className="text-xl font-bold mb-4">Total Tips</h3>
-            <div className="text-sm text-slate-400 mb-2">All-time</div>
-            <div className="text-3xl font-bold text-purple-400">
-              {microToStxDisplay(totalTips)} STX
+        <div className="container">
+          <header className="nav">
+            <div className="logo">
+              <div className="logo-badge">💧</div>
+              <div>Tip Jar</div>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 mb-8">
-          <h3 className="text-2xl font-bold mb-6">Send a tip</h3>
-          <div className="max-w-md">
-            <label className="block text-sm text-slate-400 mb-2">Amount (STX)</label>
-            <input
-              type="number"
-              min="0.1"
-              step="0.1"
-              value={amountStx}
-              onChange={(e) => setAmountStx(e.target.value)}
-              className="w-full bg-black/30 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition"
-            />
-            <div className="flex gap-3 mt-4">
-              <button 
-                onClick={tip} 
-                disabled={loading || !connected}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-medium transition"
-              >
-                {loading ? 'Sending…' : 'Tip now'}
-              </button>
-              {!connected && (
+            <div className="actions">
+              {!connected ? (
                 <>
-                  <button 
-                    onClick={connect}
-                    className="bg-white/10 hover:bg-white/20 px-4 py-3 rounded-lg font-medium transition"
-                  >
-                    Connect
+                  <button className="btn btn-primary btn-glow" onClick={connect}>
+                    Connect Wallet
                   </button>
-                  <button 
-                    onClick={openWalletConnectModal}
-                    className="bg-white/10 hover:bg-white/20 px-4 py-3 rounded-lg font-medium transition"
-                  >
-                    WC
+                  <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                    WalletConnect
                   </button>
                 </>
+              ) : (
+                <button className="btn btn-secondary" onClick={refresh}>
+                  Refresh
+                </button>
               )}
             </div>
-            <p className="text-sm text-slate-400 mt-3">
-              Minimum tip is 0.1 STX. You will confirm the transaction in your wallet.
-            </p>
-          </div>
-        </div>
+          </header>
 
-        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10">
-          <h3 className="text-2xl font-bold mb-6">Recent tips</h3>
-          {recent.length === 0 && (
-            <div className="text-slate-400 text-center py-8">No tips yet.</div>
-          )}
-          {recent.length > 0 && (
-            <ul className="space-y-3">
-              {recent.map((r, idx) => (
-                <li 
-                  key={r.txid || r.index || idx}
-                  className="flex items-start gap-4 bg-black/20 rounded-lg p-4 border border-white/5"
+          <section className="hero">
+            <div className="aurora aurora-1"></div>
+            <div className="aurora aurora-2"></div>
+            <div className="aurora aurora-3"></div>
+
+            <div className="hero-card">
+              <div className="kicker">On-chain gratitude</div>
+              <h1 className="title">
+                Send a tip on <span className="gradient-text">Stacks mainnet</span>
+              </h1>
+              <p className="subtitle">
+                Support the creator by sending STX. Tips go directly to the contract creator address.
+                Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
+              </p>
+              
+              <div className="grid">
+                <div className="card">
+                  <h3>Contract</h3>
+                  <div className="label">Identifier</div>
+                  <div style={{wordBreak: 'break-all', fontSize: '13px', marginTop: '8px'}}>
+                    <code>{CONTRACT_ID}</code>
+                  </div>
+                </div>
+                <div className="card">
+                  <h3>Total Tips</h3>
+                  <div className="label">All-time</div>
+                  <div className="value gradient-text">{microToStxDisplay(totalTips)} STX</div>
+                </div>
+              </div>
+
+              <div className="actions" style={{ marginTop: '16px' }}>
+                {!connected ? (
+                  <>
+                    <button className="btn btn-primary btn-glow" onClick={connect}>
+                      Connect Wallet
+                    </button>
+                    <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                      WalletConnect
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn btn-secondary" onClick={refresh}>
+                    Refresh stats
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="hero-card spotlight-card">
+              <div className="emoji-badge">💸</div>
+              <h3 style={{ marginTop: 0 }}>Send a tip</h3>
+              <div className="label">Amount (STX)</div>
+              <input
+                className="input"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={amountStx}
+                onChange={(e) => setAmountStx(e.target.value)}
+                style={{ marginTop: '8px' }}
+              />
+              <div className="actions" style={{ marginTop: '12px' }}>
+                <button 
+                  className="btn btn-primary btn-glow" 
+                  onClick={tip} 
+                  disabled={loading || !connected}
+                  style={{ 
+                    opacity: (loading || !connected) ? 0.5 : 1,
+                    cursor: (loading || !connected) ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  <div 
-                    className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold flex-shrink-0"
-                    title={r.tipper}
-                  >
-                    {r.tipper.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4 mb-1">
-                      <code className="text-sm text-slate-300 truncate" title={r.tipper}>
-                        {shortAddr(r.tipper)}
-                      </code>
-                      <span className="font-bold text-purple-400 whitespace-nowrap">
-                        {microToStxDisplay(r.amountMicro)} STX
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                      {r.timeIso && (
-                        <span>{new Date(r.timeIso).toLocaleString()}</span>
-                      )}
-                      {r.txid && (
-                        <a
-                          href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-purple-400 hover:text-purple-300 transition"
-                        >
-                          View on explorer →
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                  {loading ? 'Sending…' : 'Tip now'}
+                </button>
+                {!connected && (
+                  <>
+                    <button className="btn btn-secondary" onClick={connect}>
+                      Connect
+                    </button>
+                    <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                      WC
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="subtitle" style={{ marginTop: '12px', marginBottom: 0 }}>
+                Minimum tip is 0.1 STX. You will confirm the transaction in your wallet.
+              </p>
+            </div>
+          </section>
+
+          <section style={{ marginTop: '24px' }}>
+            <div className="card">
+              <h3>Recent tips</h3>
+              {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
+              {recent.length > 0 && (
+                <ul className="tips-list">
+                  {recent.map((r, idx) => (
+                    <li key={r.txid || r.index || idx} className="tip-item">
+                      <div className="tip-avatar" title={r.tipper}>
+                        {r.tipper.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="tip-info">
+                        <div className="tip-row">
+                          <span className="tip-addr">
+                            <code title={r.tipper}>{shortAddr(r.tipper)}</code>
+                          </span>
+                          <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                        </div>
+                        <div className="tip-meta">
+                          {r.timeIso && (
+                            <span>{new Date(r.timeIso).toLocaleString()}</span>
+                          )}
+                          {r.txid && (
+                            <a
+                              className="tip-link"
+                              href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              view
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>
-      </main>
 
-      <footer className="text-center py-8 text-slate-400 text-sm">
-        Built with Stacks • WalletConnect enabled
-      </footer>
+        <style>{`
+          @keyframes bodyBgShift {
+            0% { background-position: 10% 10%, 90% 20%, 0% 0%; }
+            50% { background-position: 12% 12%, 88% 22%, 0% 0%; }
+            100% { background-position: 10% 10%, 90% 20%, 0% 0%; }
+          }
+          @keyframes floatA {
+            0%,100% { transform: translateY(-10px); }
+            50% { transform: translateY(10px); }
+          }
+          @keyframes floatB {
+            0%,100% { transform: translateX(10px); }
+            50% { transform: translateX(-10px); }
+          }
+          @keyframes floatC {
+            0%,100% { transform: translate(5px,-5px); }
+            50% { transform: translate(-5px,5px); }
+          }
+          @keyframes heroDrift {
+            0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+            50% { transform: translate3d(2%,-1%,0) rotate(5deg) scale(1.02); }
+            100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+          }
 
-      <style>{`
-        @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
+          * { box-sizing: border-box; }
+          .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+          
+          .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.2px; }
+          .logo-badge {
+            width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+            background: linear-gradient(145deg, rgba(57,255,20,0.25), rgba(0,255,163,0.25));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 10px 30px rgba(0,0,0,0.3);
           }
-          to {
-            transform: translateX(0);
-            opacity: 1;
+
+          .nav { display: flex; align-items: center; justify-content: space-between; }
+          .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+          
+          .hero {
+            margin-top: 48px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px;
+            position: relative; overflow: hidden;
           }
-        }
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
-        }
-      `}</style>
-    </div>
+          .hero::before {
+            content: ''; position: absolute; inset: -25% -15% -30% -15%; z-index: 0;
+            background: radial-gradient(50% 60% at 20% 30%, rgba(57,255,20,0.18), transparent 70%),
+                        radial-gradient(55% 55% at 80% 20%, rgba(0,255,163,0.18), transparent 70%),
+                        radial-gradient(60% 60% at 50% 80%, rgba(34,197,94,0.12), transparent 70%);
+            filter: blur(60px); animation: heroDrift 28s ease-in-out infinite; pointer-events: none;
+          }
+          @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr !important; }
+          }
+
+          .hero-card {
+            border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px); border-radius: 16px; padding: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35); position: relative; z-index: 1;
+          }
+
+          .aurora {
+            position: absolute; inset: -20% -10% auto -10%; filter: blur(40px);
+            opacity: 0.6; pointer-events: none;
+          }
+          .aurora-1 {
+            background: radial-gradient(40% 40% at 20% 30%, rgba(57,255,20,0.35), transparent 60%);
+            animation: floatA 16s ease-in-out infinite;
+          }
+          .aurora-2 {
+            background: radial-gradient(35% 35% at 80% 20%, rgba(0,255,163,0.35), transparent 60%);
+            animation: floatB 18s ease-in-out infinite;
+          }
+          .aurora-3 {
+            background: radial-gradient(45% 45% at 50% 70%, rgba(34,197,94,0.25), transparent 60%);
+            animation: floatC 22s ease-in-out infinite;
+          }
+
+          .kicker { color: #39FF14; font-weight: 600; letter-spacing: 0.3px; }
+          .title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; margin: 10px 0 8px; }
+          .subtitle { color: #94a3b8; margin: 0 0 20px; line-height: 1.6; }
+          .gradient-text {
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+          }
+
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+          .card {
+            border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px); border-radius: 14px; padding: 20px;
+          }
+          .card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+          .label { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+          .value { font-size: 28px; font-weight: 800; margin-top: 8px; }
+
+          .btn {
+            appearance: none; border: 0; cursor: pointer; padding: 12px 16px;
+            border-radius: 12px; font-weight: 600;
+            transition: transform 0.05s ease, box-shadow 0.2s ease;
+          }
+          .btn-primary {
+            background: linear-gradient(135deg, #39FF14, #00FFA3); color: #0b1020;
+            box-shadow: 0 8px 24px rgba(57,255,20,0.25), 0 12px 36px rgba(0,255,163,0.2);
+          }
+          .btn-primary:hover { transform: translateY(-1px); }
+          .btn-secondary {
+            background: rgba(255,255,255,0.08); color: #e5e7eb;
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+          .btn-glow {
+            box-shadow: 0 0 0 0 rgba(57,255,20,0), 0 12px 36px rgba(0,255,163,0.18);
+          }
+          .btn-glow:hover {
+            box-shadow: 0 0 0 6px rgba(57,255,20,0.10), 0 16px 44px rgba(0,255,163,0.25);
+          }
+
+          .input {
+            width: 100%; height: 44px; padding: 0 12px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06); color: #e5e7eb;
+          }
+          .input:focus { outline: 2px solid rgba(57,255,20,0.35); }
+
+          .spotlight-card {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+            border-radius: 16px; padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+          }
+          .spotlight-card::after {
+            content: ''; position: absolute; inset: -1px; border-radius: 16px;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(57,255,20,0.18), rgba(0,255,163,0.18));
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            padding: 1px; opacity: 0.65;
+          }
+
+          .emoji-badge {
+            width: 44px; height: 44px; display: grid; place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(57,255,20,0.25), rgba(0,255,163,0.25));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+          }
+
+          .tips-list {
+            list-style: none; padding: 0; margin: 8px 0 0;
+            display: flex; flex-direction: column; gap: 10px;
+          }
+          .tip-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04); border-radius: 12px;
+          }
+          .tip-avatar {
+            flex: 0 0 36px; width: 36px; height: 36px;
+            display: grid; place-items: center; border-radius: 10px;
+            font-weight: 700; font-size: 12px; color: #0b1020;
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+          }
+          .tip-info {
+            display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;
+          }
+          .tip-row {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+          }
+          .tip-addr code { color: #e5e7eb; }
+          .tip-amount {
+            font-weight: 800; color: #0b1020;
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+            padding: 4px 10px; border-radius: 999px; font-size: 14px;
+          }
+          .tip-meta {
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+            color: #94a3b8; font-size: 12px;
+          }
+          .tip-link {
+            color: #e5e7eb; text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            padding: 2px 8px; border-radius: 8px;
+          }
+          .tip-link:hover { border-color: rgba(255,255,255,0.25); }
+
+          .footer {
+            margin-top: 48px; color: #94a3b8; font-size: 12px; text-align: center;
+          }
+        `}</style>
+      </div>
+    </>
   );
 }
