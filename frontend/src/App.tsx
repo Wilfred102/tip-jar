@@ -3,6 +3,7 @@ import { CONTRACT_ID, WALLETCONNECT_PROJECT_ID } from './config';
 import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
+import { toast } from 'sonner';
 
 const network = new StacksMainnet();
 
