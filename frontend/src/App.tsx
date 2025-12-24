@@ -3,6 +3,7 @@ import { CONTRACT_ID, WALLETCONNECT_PROJECT_ID } from './config';
 import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
+import { toast } from 'sonner';
 
 const network = new StacksMainnet();
 
@@ -52,6 +53,7 @@ export default function App() {
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
 
   const connect = useCallback(() => {
+    toast('Connecting wallet...');
     showConnect({
       userSession: new UserSession({ appConfig: undefined as any }),
       appDetails: { name: 'STX Tip Jar', icon: window.location.origin + '/favicon.ico' },
@@ -62,6 +64,7 @@ export default function App() {
     } as any);
   }, []);
 
+ 
   const fetchTotal = useCallback(async () => {
     const res = await callReadOnlyFunction({
       contractAddress,
