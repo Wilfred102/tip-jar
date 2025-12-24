@@ -169,8 +169,12 @@ export default function App() {
         onFinish: async () => {
           await refresh();
           setLoading(false);
+          toast.success('Tip send successfully')
         },
-        onCancel: () => setLoading(false),
+        onCancel: () => {
+          setLoading(false);
+          toast('Tip canceled')
+        },
         walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       } as any);
     } catch (e) {
