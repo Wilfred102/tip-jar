@@ -61,7 +61,9 @@ export default function App() {
         setConnected(true);
         toast.success('Wallet connected');
       },
-      onCancel: () => {},
+      onCancel: () => {
+        toast('Connection Canceled')
+      },
       walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       network,
     } as any);
