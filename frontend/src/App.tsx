@@ -169,7 +169,7 @@ export default function App() {
         onFinish: async () => {
           await refresh();
           setLoading(false);
-          toast.success('Tip send successfully')
+          toast.success('Tip sent successfully')
         },
         onCancel: () => {
           setLoading(false);
@@ -180,6 +180,7 @@ export default function App() {
     } catch (e) {
       console.error(e);
       setLoading(false);
+      toast.error(e?.message || 'Transaction failed')
     }
   }, [amountStx, contractAddress, contractName, refresh]);
 
