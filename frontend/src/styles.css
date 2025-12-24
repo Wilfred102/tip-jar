@@ -75,7 +75,7 @@ body {
   z-index: 0;
   background: radial-gradient(1200px 800px at 10% 10%, rgba(57,255,20,0.08), transparent 40%),
   radial-gradient(1000px 700px at 90% 20%, rgba(0,255,163,0.08), transparent 40%),
-  radial-gradient(60% 60% at 50% 80%, rgba(59,130,246,0.12), transparent 70%);
+  linear-gradient(160deg, var(--bg-start), var(--bg-end));
   filter: blur(60px);
   animation: heroDrift 28s ease-in-out infinite;
   pointer-events: none;
