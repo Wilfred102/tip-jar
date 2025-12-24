@@ -79,7 +79,6 @@ body {
   animation: bodyBgShift 60s ease-in-out infinite;
 
   filter: blur(60px);
-  animation: heroDrift 28s ease-in-out infinite;
   pointer-events: none;
 }
 
