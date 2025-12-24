@@ -105,6 +105,8 @@ body {
 .kicker { color: var(--accent); font-weight: 600; letter-spacing: 0.3px; }
 .title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; margin: 10px 0 8px; }
 .subtitle { color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+.input:focus { outline: 2px solid rgba(57,255,20,0.35); }
+
 
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
