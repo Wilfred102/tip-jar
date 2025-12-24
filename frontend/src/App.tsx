@@ -189,7 +189,7 @@ export default function App() {
       <header className="nav">
         <div className="logo">
           <div className="logo-badge">💧</div>
-          <div>STX Tip Jar</div>
+          <div>Tip Jar</div>
         </div>
         <div className="actions">
           {!connected ? (
