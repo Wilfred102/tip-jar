@@ -41,6 +41,7 @@ type RecentTip = {
   amountMicro: string; 
   timeIso?: string; 
   txid?: string 
+  timeMs?: number;
 };
 
 export default function App() {
