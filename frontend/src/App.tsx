@@ -4,7 +4,7 @@ import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 
 const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
-const WALLETCONNECT_PROJECT_ID = 'your-project-id';
+const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
 const network = new StacksMainnet();
 
 function splitContractId(id: string) {
