@@ -8,7 +8,14 @@ import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactio
 function splitContractId(id: string) {
   const [contractAddress, contractName]  = id.split('.');
   return { contractAddress, contractName}
+}
 
+function microToStxDisplay(micro: string | bigint): string {
+  const m = typeof micro === 'string' ? BigInt(micro.replace(/^u/, '')) : micro;
+  const whole = m / 1_000_000n;
+  const frac = m % 1_000_000n;
+  const fracStr = frac.toString().padStart(6, '0').replace(/0+$/, '');
+  return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
 }
 
 
