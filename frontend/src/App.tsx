@@ -406,7 +406,7 @@ export default function App() {
                             <span>{new Date(r.timeMs).toLocaleString()}</span>
                           ) : r.timeIso && (
                             <span>{new Date(r.timeIso).toLocaleString()}</span>
-                          )}
+                          )} 
                           {r.txid && (
                             <a
                               className="tip-link"
