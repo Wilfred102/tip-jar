@@ -64,26 +64,10 @@ export default function Landing() {
             (typeof tx.block_time === 'number' && tx.block_time) ||
             (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
             0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      } catch (error) {
-        
-      }
+            return Math.max(acc, s);
+          }, 0);
+          setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
+      } catch { }
     })
   })
   return (
