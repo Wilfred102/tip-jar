@@ -53,6 +53,14 @@ export default function Landing() {
         const data = await r.json();
         const tips = (data.results || []).filter(
           (tx: any) =>
+            tx.tx_type === 'contract_call' &&
+            tx.tx_status === 'success' &&
+            tx.contract_call?.function_name === 'tip'
+          );
+
+
+
+
 
 
 
