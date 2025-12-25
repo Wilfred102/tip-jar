@@ -22,6 +22,7 @@ function microToStxDisplay(micro: string | bigint): string {
 export default function Landing() {
   const [totalTip, setTotalTips] = useState<string>('u0');
   const [recentCount, setRecentCount] = useState<number>(0);
+  const [lastTipMs, setLastTipMs] = useState<number | null>(null)
   return (
     <div className="container">
       <header className="nav">
