@@ -49,6 +49,10 @@ export default function Landing() {
       try {
         const url = `https://api.hiro.so/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
         const r = await fetch(url);
+        if (!r.ok) throw new Error(`API ${r.status}`);
+        const data = await r.json();
+
+
 
 
       } catch (error) {
