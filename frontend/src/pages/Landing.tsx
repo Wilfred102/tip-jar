@@ -6,7 +6,9 @@ import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactio
 
 
 function splitContractId(id: string) {
-  
+  const [contractAddress, contractName]  = id.split('.');
+  return { contractAddress, contractName}
+
 }
 
 
