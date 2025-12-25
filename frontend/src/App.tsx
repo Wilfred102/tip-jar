@@ -119,6 +119,12 @@ export default function App() {
           tx.receipt_time_iso ||
           tx.block_time_iso ||
           tx.burn_block;
+
+          const seconds = 
+          (typeof tx.reciept_time === 'number' && tx.reciept_time)??
+          (typeof tx.block_time === 'number' && tx.block_time)??
+          (typeof tx.burn_block === 'number' && tx.burn_block)??
+          0;
         return {
           tipper: tx.sender_address as string,
           amountMicro,
