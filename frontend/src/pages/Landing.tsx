@@ -42,7 +42,20 @@ export default function Landing() {
 
       } catch {}
     })()
-  }, [contractAddress, contractName, network])
+  }, [contractAddress, contractName, network]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = `https://api.hiro.so/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
+        const r = await fetch(url);
+
+
+      } catch (error) {
+        
+      }
+    })
+  })
   return (
     <div className="container">
       <header className="nav">
