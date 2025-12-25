@@ -403,8 +403,8 @@ export default function App() {
                         </div>
                         <div className="tip-meta">
                           {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
-                            <span>{}</span>
-                          )r.timeIso && (
+                            <span>{new Date(r.timeMs).toLocaleString()}</span>
+                          ) : r.timeIso && (
                             <span>{new Date(r.timeIso).toLocaleString()}</span>
                           )}
                           {r.txid && (
