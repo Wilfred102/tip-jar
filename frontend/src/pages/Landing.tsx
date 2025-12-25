@@ -68,8 +68,8 @@ export default function Landing() {
           }, 0);
           setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
       } catch { }
-    })
-  })
+    })()
+  }, [contractAddress, contractName]);
   return (
     <div className="container">
       <header className="nav">
