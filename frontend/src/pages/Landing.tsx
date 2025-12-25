@@ -23,6 +23,7 @@ export default function Landing() {
   const [totalTip, setTotalTips] = useState<string>('u0');
   const [recentCount, setRecentCount] = useState<number>(0);
   const [lastTipMs, setLastTipMs] = useState<number | null>(null)
+  const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), [])
   return (
     <div className="container">
       <header className="nav">
