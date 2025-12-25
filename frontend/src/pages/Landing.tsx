@@ -5,6 +5,11 @@ import { StacksMainnet } from '@stacks/network';
 import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactions';
 
 
+function splitContractId(id: string) {
+  
+}
+
+
 export default function Landing() {
   return (
     <div className="container">
