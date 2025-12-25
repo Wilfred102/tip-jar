@@ -51,6 +51,10 @@ export default function Landing() {
         const r = await fetch(url);
         if (!r.ok) throw new Error(`API ${r.status}`);
         const data = await r.json();
+        const tips = (data.results || []).filter(
+          (tx: any) =>
+
+
 
 
 
