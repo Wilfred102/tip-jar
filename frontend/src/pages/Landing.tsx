@@ -57,6 +57,20 @@ export default function Landing() {
             tx.tx_status === 'success' &&
             tx.contract_call?.function_name === 'tip'
           );
+          setRecentCount(tips.length);
+          const latestSeconds = tips.reduce((acc: number, tx: any) => {
+            const s =
+            (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
+            (typeof tx.block_time === 'number' && tx.block_time) ||
+            (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
+            0;
+
+
+
+
+
+
+
 
 
 
