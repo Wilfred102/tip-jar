@@ -25,6 +25,25 @@ export default function Landing() {
   const [lastTipMs, setLastTipMs] = useState<number | null>(null);
   const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await callReadOnlyFunction({
+          contractAddress,
+          contractName,
+          functionName: 'get-total-tips',
+          functionArgs: [],
+          network,
+          senderAddress: contractAddress,
+        });
+        const json = cvToJSON(res as ClarityValue);
+        
+      } catch (error) {
+        
+      }
+    })
+  })
   return (
     <div className="container">
       <header className="nav">
