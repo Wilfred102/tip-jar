@@ -165,6 +165,9 @@ export default function Landing() {
           <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
         </div>
       </section>
+      <section>
+        
+      </section>
 
       <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
     </div>
