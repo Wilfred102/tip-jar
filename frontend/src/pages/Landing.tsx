@@ -38,12 +38,11 @@ export default function Landing() {
           senderAddress: contractAddress,
         });
         const json = cvToJSON(res as ClarityValue);
-        
-      } catch (error) {
-        
-      }
-    })
-  })
+        setTotalTips((json as any).value as string);
+
+      } catch {}
+    })()
+  }, [contractAddress, contractName, network])
   return (
     <div className="container">
       <header className="nav">
