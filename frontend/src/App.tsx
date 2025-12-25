@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CONTRACT_ID, WALLETCONNECT_PROJECT_ID } from './config';
 import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
-import { toast } from 'sonner';
 
+const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
+const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
 const network = new StacksMainnet();
 
 function splitContractId(id: string) {
@@ -13,11 +13,10 @@ function splitContractId(id: string) {
 }
 
 function parseStxToMicro(input: string): bigint {
-  // Safe decimal -> microSTX conversion supporting up to 6 decimals
   const trimmed = input.trim();
   if (!/^\d*(?:\.|\,)??\d*$/.test(trimmed)) return 0n;
   const [whole, fracRaw = ''] = trimmed.replace(',', '.').split('.');
-  const frac = (fracRaw + '000000').slice(0, 6); // pad to 6
+  const frac = (fracRaw + '000000').slice(0, 6);
   const w = whole === '' ? '0' : whole;
   const microStr = `${w}${frac}`.replace(/^0+(?=\d)/, '');
   return microStr === '' ? 0n : BigInt(microStr);
@@ -42,6 +41,7 @@ type RecentTip = {
   amountMicro: string; 
   timeIso?: string; 
   txid?: string 
+  timeMs?: number;
 };
 
 export default function App() {
@@ -50,7 +50,23 @@ export default function App() {
   const [totalTips, setTotalTips] = useState<string>('u0');
   const [recent, setRecent] = useState<RecentTip[]>([]);
   const [loading, setLoading] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const [wcModalOpen, setWcModalOpen] = useState(false);
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
+
+  const toast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  };
+
+  const openWalletConnectModal = useCallback(() => {
+    setWcModalOpen(true);
+    toast('WalletConnect modal opened');
+  }, []);
+
+  const closeWalletConnectModal = useCallback(() => {
+    setWcModalOpen(false);
+  }, []);
 
   const connect = useCallback(() => {
     toast('Connecting wallet...');
@@ -59,15 +75,16 @@ export default function App() {
       appDetails: { name: 'STX Tip Jar', icon: window.location.origin + '/favicon.ico' },
       onFinish: () => {
         setConnected(true);
-        toast.success('Wallet connected');
+        toast('Wallet connected');
       },
-      onCancel: () => {},
+      onCancel: () => {
+        toast('Connection canceled')
+      },
       walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       network,
     } as any);
   }, []);
 
- 
   const fetchTotal = useCallback(async () => {
     const res = await callReadOnlyFunction({
       contractAddress,
@@ -82,7 +99,6 @@ export default function App() {
   }, [contractAddress, contractName]);
 
   const fetchRecentViaApi = useCallback(async () => {
-    // Hiro mainnet API - recent contract-call txs for this contract
     const base = 'https://api.hiro.so';
     const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=25`;
     const r = await fetch(url);
@@ -96,9 +112,21 @@ export default function App() {
       )
       .map((tx: any) => {
         const arg = tx.contract_call?.function_args?.[0];
-        // arg.repr like 'u100000' or fallback to hex parse omitted here
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
+
+        const timeIso = 
+          tx.receipt_time_iso ||
+          tx.block_time_iso ||
+          tx.burn_block;
+
+          const seconds = 
+          (typeof tx.reciept_time === 'number' && tx.reciept_time)??
+          (typeof tx.block_time === 'number' && tx.block_time)??
+          (typeof tx.burn_block === 'number' && tx.burn_block)??
+          0;
+
+          const timeMs = seconds * 1000;
         return {
           tipper: tx.sender_address as string,
           amountMicro,
@@ -106,7 +134,6 @@ export default function App() {
           txid: tx.tx_id,
         } as RecentTip;
       });
-    // Sort by time desc
     items.sort((a: any, b: any) => 
       new Date(b.timeIso || 0).getTime() - new Date(a.timeIso || 0).getTime()
     );
@@ -119,7 +146,6 @@ export default function App() {
       return;
     } catch (e) {
       console.warn('API fetch failed, using fallback:', e);
-      // Fallback to on-chain ring buffer (order unknown, best-effort)
     }
     const out: RecentTip[] = [];
     for (let i = 0; i < 5; i++) {
@@ -163,121 +189,438 @@ export default function App() {
         functionName: 'tip',
         functionArgs: [uintCV(micro)],
         network,
-        postConditionMode: 1, // allow
+        postConditionMode: 1,
         onFinish: async () => {
           await refresh();
           setLoading(false);
+          toast('Tip sent successfully')
         },
-        onCancel: () => setLoading(false),
+        onCancel: () => {
+          setLoading(false);
+          toast('Tip canceled')
+        },
         walletConnectProjectId: WALLETCONNECT_PROJECT_ID,
       } as any);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       setLoading(false);
+      toast(e?.message || 'Transaction failed')
     }
   }, [amountStx, contractAddress, contractName, refresh]);
 
   return (
-    <div className="container">
-      <header className="nav">
-        <div className="logo">
-          <div className="logo-badge">💧</div>
-          <div>STX Tip Jar</div>
-        </div>
-        <div className="actions">
-          {!connected ? (
-            <button className="btn btn-primary" onClick={connect}>Connect Wallet</button>
-          ) : (
-            <button className="btn btn-secondary" onClick={refresh}>Refresh</button>
-          )}
-        </div>
-      </header>
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      
+      <div style={{
+        minHeight: '100vh',
+        color: '#e5e7eb',
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        background: 'radial-gradient(1200px 800px at 10% 10%, rgba(57,255,20,0.08), transparent 40%), radial-gradient(1000px 700px at 90% 20%, rgba(0,255,163,0.08), transparent 40%), linear-gradient(160deg, #0f172a, #1e293b)'
+      }}>
+        {toastMsg && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #39FF14, #00FFA3)',
+            color: '#0b1020',
+            padding: '12px 24px',
+            borderRadius: '12px',
+            fontWeight: 600,
+            boxShadow: '0 8px 24px rgba(57,255,20,0.35)',
+            zIndex: 1000
+          }}>
+            {toastMsg}
+          </div>
+        )}
 
-      <section className="hero">
-        <div className="hero-card">
-          <div className="kicker">On-chain gratitude</div>
-          <h1 className="title">Send a tip on Stacks mainnet</h1>
-          <p className="subtitle">
-            Support the creator by sending STX. Tips go directly to the contract creator address.
-            Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
-          </p>
-          <div className="grid">
-            <div className="card">
-              <h3>Contract</h3>
-              <div className="label">Identifier</div>
-              <div style={{wordBreak: 'break-all'}}><code>{CONTRACT_ID}</code></div>
+        {wcModalOpen && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div className="spotlight-card" style={{ maxWidth: '500px', width: '100%' }}>
+              <div className="emoji-badge">🔗</div>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 12px' }}>WalletConnect</h3>
+              <p className="subtitle">
+                This opens WalletConnect for mobile wallet pairing. 
+                In production, this uses Reown AppKit.
+              </p>
+              <div className="card" style={{ marginBottom: '20px' }}>
+                <div className="label">Project ID</div>
+                <code style={{ fontSize: '11px', wordBreak: 'break-all' }}>{WALLETCONNECT_PROJECT_ID}</code>
+              </div>
+              <button 
+                onClick={closeWalletConnectModal}
+                className="btn btn-primary btn-glow"
+                style={{ width: '100%' }}
+              >
+                Close
+              </button>
             </div>
-            <div className="card">
-              <h3>Total Tips</h3>
-              <div className="label">All-time</div>
-              <div className="value">{microToStxDisplay(totalTips)} STX</div>
+          </div>
+        )}
+
+        <div className="container">
+          <header className="nav">
+            <div className="logo">
+              <div className="logo-badge">💧</div>
+              <div>Tip Jar</div>
             </div>
-          </div>
-          <div className="actions" style={{ marginTop: 16 }}>
-            {!connected ? (
-              <button className="btn btn-primary" onClick={connect}>Connect Wallet</button>
-            ) : (
-              <button className="btn btn-secondary" onClick={refresh}>Refresh stats</button>
-            )}
-          </div>
+            <div className="actions">
+              {!connected ? (
+                <>
+                  <button className="btn btn-primary btn-glow" onClick={connect}>
+                    Connect Wallet
+                  </button>
+                  <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                    WalletConnect
+                  </button>
+                </>
+              ) : (
+                <button className="btn btn-secondary" onClick={refresh}>
+                  Refresh
+                </button>
+              )}
+            </div>
+          </header>
+
+          <section className="hero">
+            <div className="aurora aurora-1"></div>
+            <div className="aurora aurora-2"></div>
+            <div className="aurora aurora-3"></div>
+
+            <div className="hero-card">
+              <div className="kicker">On-chain gratitude</div>
+              <h1 className="title">
+                Send a tip on <span className="gradient-text">Stacks mainnet</span>
+              </h1>
+              <p className="subtitle">
+                Support the creator by sending STX. Tips go directly to the contract creator address.
+                Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
+              </p>
+              
+              <div className="grid">
+                <div className="card">
+                  <h3>Contract</h3>
+                  <div className="label">Identifier</div>
+                  <div style={{wordBreak: 'break-all', fontSize: '13px', marginTop: '8px'}}>
+                    <code>{CONTRACT_ID}</code>
+                  </div>
+                </div>
+                <div className="card">
+                  <h3>Total Tips</h3>
+                  <div className="label">All-time</div>
+                  <div className="value gradient-text">{microToStxDisplay(totalTips)} STX</div>
+                </div>
+              </div>
+
+              <div className="actions" style={{ marginTop: '16px' }}>
+                {!connected ? (
+                  <>
+                    <button className="btn btn-primary btn-glow" onClick={connect}>
+                      Connect Wallet
+                    </button>
+                    <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                      WalletConnect
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn btn-secondary" onClick={refresh}>
+                    Refresh stats
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="hero-card spotlight-card">
+              <div className="emoji-badge">💸</div>
+              <h3 style={{ marginTop: 0 }}>Send a tip</h3>
+              <div className="label">Amount (STX)</div>
+              <input
+                className="input"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={amountStx}
+                onChange={(e) => setAmountStx(e.target.value)}
+                style={{ marginTop: '8px' }}
+              />
+              <div className="actions" style={{ marginTop: '12px' }}>
+                <button 
+                  className="btn btn-primary btn-glow" 
+                  onClick={tip} 
+                  disabled={loading || !connected}
+                  style={{ 
+                    opacity: (loading || !connected) ? 0.5 : 1,
+                    cursor: (loading || !connected) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {loading ? 'Sending…' : 'Tip now'}
+                </button>
+                {!connected && (
+                  <>
+                    <button className="btn btn-secondary" onClick={connect}>
+                      Connect
+                    </button>
+                    <button className="btn btn-secondary" onClick={openWalletConnectModal}>
+                      WC
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="subtitle" style={{ marginTop: '12px', marginBottom: 0 }}>
+                Minimum tip is 0.1 STX. You will confirm the transaction in your wallet.
+              </p>
+            </div>
+          </section>
+
+          <section style={{ marginTop: '24px' }}>
+            <div className="card">
+              <h3>Recent tips</h3>
+              {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
+              {recent.length > 0 && (
+                <ul className="tips-list">
+                  {recent.map((r, idx) => (
+                    <li key={r.txid || r.index || idx} className="tip-item">
+                      <div className="tip-avatar" title={r.tipper}>
+                        {r.tipper.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="tip-info">
+                        <div className="tip-row">
+                          <span className="tip-addr">
+                            <code title={r.tipper}>{shortAddr(r.tipper)}</code>
+                          </span>
+                          <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                        </div>
+                        <div className="tip-meta">
+                          {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
+                            <span>{new Date(r.timeMs).toLocaleString()}</span>
+                          ) : r.timeIso && (
+                            <span>{new Date(r.timeIso).toLocaleString()}</span>
+                          )} 
+                          {r.txid && (
+                            <a
+                              className="tip-link"
+                              href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              view
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>
 
-        <div className="hero-card">
-          <h3 style={{ marginTop: 0 }}>Send a tip</h3>
-          <div className="label">Amount (STX)</div>
-          <input
-            className="input"
-            type="number"
-            min="0.1"
-            step="0.1"
-            value={amountStx}
-            onChange={(e) => setAmountStx(e.target.value)}
-          />
-          <div className="actions" style={{ marginTop: 12 }}>
-            <button className="btn btn-primary" onClick={tip} disabled={loading || !connected}>
-              {loading ? 'Sending…' : 'Tip now'}
-            </button>
-            {!connected && <button className="btn btn-secondary" onClick={connect}>Connect first</button>}
-          </div>
-          <p className="subtitle" style={{ marginTop: 12 }}>
-            Minimum tip is 0.1 STX. You will confirm the transaction in your wallet.
-          </p>
-        </div>
-      </section>
+        <style>{`
+          @keyframes bodyBgShift {
+            0% { background-position: 10% 10%, 90% 20%, 0% 0%; }
+            50% { background-position: 12% 12%, 88% 22%, 0% 0%; }
+            100% { background-position: 10% 10%, 90% 20%, 0% 0%; }
+          }
+          @keyframes floatA {
+            0%,100% { transform: translateY(-10px); }
+            50% { transform: translateY(10px); }
+          }
+          @keyframes floatB {
+            0%,100% { transform: translateX(10px); }
+            50% { transform: translateX(-10px); }
+          }
+          @keyframes floatC {
+            0%,100% { transform: translate(5px,-5px); }
+            50% { transform: translate(-5px,5px); }
+          }
+          @keyframes heroDrift {
+            0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+            50% { transform: translate3d(2%,-1%,0) rotate(5deg) scale(1.02); }
+            100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+          }
 
-      <section style={{ marginTop: 24 }}>
-        <div className="card">
-          <h3>Recent tips</h3>
-          {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
-          {recent.length > 0 && (
-            <ul className="list">
-              {recent.map((r, idx) => (
-                <li key={r.txid || r.index || idx}>
-                  <code title={r.tipper}>{shortAddr(r.tipper)}</code>
-                  {' '}— {microToStxDisplay(r.amountMicro)} STX
-                  {r.timeIso && (
-                    <span style={{ color: '#94a3b8' }}>
-                      {' '}• {new Date(r.timeIso).toLocaleString()}
-                    </span>
-                  )}
-                  {r.txid && (
-                    <a
-                      href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ marginLeft: 8 }}
-                    >
-                      view
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
+          * { box-sizing: border-box; }
+          .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+          
+          .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.2px; }
+          .logo-badge {
+            width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+            background: linear-gradient(145deg, rgba(57,255,20,0.25), rgba(0,255,163,0.25));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 10px 30px rgba(0,0,0,0.3);
+          }
 
-      <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
-    </div>
+          .nav { display: flex; align-items: center; justify-content: space-between; }
+          .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+          
+          .hero {
+            margin-top: 48px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px;
+            position: relative; overflow: hidden;
+          }
+          .hero::before {
+            content: ''; position: absolute; inset: -25% -15% -30% -15%; z-index: 0;
+            background: radial-gradient(50% 60% at 20% 30%, rgba(57,255,20,0.18), transparent 70%),
+                        radial-gradient(55% 55% at 80% 20%, rgba(0,255,163,0.18), transparent 70%),
+                        radial-gradient(60% 60% at 50% 80%, rgba(34,197,94,0.12), transparent 70%);
+            filter: blur(60px); animation: heroDrift 28s ease-in-out infinite; pointer-events: none;
+          }
+          @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr !important; }
+          }
+
+          .hero-card {
+            border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px); border-radius: 16px; padding: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35); position: relative; z-index: 1;
+          }
+
+          .aurora {
+            position: absolute; inset: -20% -10% auto -10%; filter: blur(40px);
+            opacity: 0.6; pointer-events: none;
+          }
+          .aurora-1 {
+            background: radial-gradient(40% 40% at 20% 30%, rgba(57,255,20,0.35), transparent 60%);
+            animation: floatA 16s ease-in-out infinite;
+          }
+          .aurora-2 {
+            background: radial-gradient(35% 35% at 80% 20%, rgba(0,255,163,0.35), transparent 60%);
+            animation: floatB 18s ease-in-out infinite;
+          }
+          .aurora-3 {
+            background: radial-gradient(45% 45% at 50% 70%, rgba(34,197,94,0.25), transparent 60%);
+            animation: floatC 22s ease-in-out infinite;
+          }
+
+          .kicker { color: #39FF14; font-weight: 600; letter-spacing: 0.3px; }
+          .title { font-size: clamp(28px, 5vw, 44px); font-weight: 800; margin: 10px 0 8px; }
+          .subtitle { color: #94a3b8; margin: 0 0 20px; line-height: 1.6; }
+          .gradient-text {
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+          }
+
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+          .card {
+            border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px); border-radius: 14px; padding: 20px;
+          }
+          .card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+          .label { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+          .value { font-size: 28px; font-weight: 800; margin-top: 8px; }
+
+          .btn {
+            appearance: none; border: 0; cursor: pointer; padding: 12px 16px;
+            border-radius: 12px; font-weight: 600;
+            transition: transform 0.05s ease, box-shadow 0.2s ease;
+          }
+          .btn-primary {
+            background: linear-gradient(135deg, #39FF14, #00FFA3); color: #0b1020;
+            box-shadow: 0 8px 24px rgba(57,255,20,0.25), 0 12px 36px rgba(0,255,163,0.2);
+          }
+          .btn-primary:hover { transform: translateY(-1px); }
+          .btn-secondary {
+            background: rgba(255,255,255,0.08); color: #e5e7eb;
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+          .btn-glow {
+            box-shadow: 0 0 0 0 rgba(57,255,20,0), 0 12px 36px rgba(0,255,163,0.18);
+          }
+          .btn-glow:hover {
+            box-shadow: 0 0 0 6px rgba(57,255,20,0.10), 0 16px 44px rgba(0,255,163,0.25);
+          }
+
+          .input {
+            width: 100%; height: 44px; padding: 0 12px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06); color: #e5e7eb;
+          }
+          .input:focus { outline: 2px solid rgba(57,255,20,0.35); }
+
+          .spotlight-card {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+            border-radius: 16px; padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+          }
+          .spotlight-card::after {
+            content: ''; position: absolute; inset: -1px; border-radius: 16px;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(57,255,20,0.18), rgba(0,255,163,0.18));
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            padding: 1px; opacity: 0.65;
+          }
+
+          .emoji-badge {
+            width: 44px; height: 44px; display: grid; place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(57,255,20,0.25), rgba(0,255,163,0.25));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+          }
+
+          .tips-list {
+            list-style: none; padding: 0; margin: 8px 0 0;
+            display: flex; flex-direction: column; gap: 10px;
+          }
+          .tip-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04); border-radius: 12px;
+          }
+          .tip-avatar {
+            flex: 0 0 36px; width: 36px; height: 36px;
+            display: grid; place-items: center; border-radius: 10px;
+            font-weight: 700; font-size: 12px; color: #0b1020;
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+          }
+          .tip-info {
+            display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;
+          }
+          .tip-row {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+          }
+          .tip-addr code { color: #e5e7eb; }
+          .tip-amount {
+            font-weight: 800; color: #0b1020;
+            background: linear-gradient(135deg, #39FF14, #00FFA3);
+            padding: 4px 10px; border-radius: 999px; font-size: 14px;
+          }
+          .tip-meta {
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+            color: #94a3b8; font-size: 12px;
+          }
+          .tip-link {
+            color: #e5e7eb; text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            padding: 2px 8px; border-radius: 8px;
+          }
+          .tip-link:hover { border-color: rgba(255,255,255,0.25); }
+
+          .footer {
+            margin-top: 48px; color: #94a3b8; font-size: 12px; text-align: center;
+          }
+        `}</style>
+      </div>
+    </>
   );
 }
