@@ -125,6 +125,8 @@ export default function App() {
           (typeof tx.block_time === 'number' && tx.block_time)??
           (typeof tx.burn_block === 'number' && tx.burn_block)??
           0;
+
+          const timeMs = seconds * 1000;
         return {
           tipper: tx.sender_address as string,
           amountMicro,
