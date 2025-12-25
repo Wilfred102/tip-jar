@@ -114,6 +114,11 @@ export default function App() {
         const arg = tx.contract_call?.function_args?.[0];
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
+
+        const timeIso = 
+          tx.receipt_time_iso ||
+          tx.block_time_iso ||
+          tx.burn_block;
         return {
           tipper: tx.sender_address as string,
           amountMicro,
