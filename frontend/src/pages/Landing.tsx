@@ -169,8 +169,11 @@ export default function Landing() {
          <div className='card'>
           <h3>All-time tipped</h3>
           <div className='label'>Total tips across the protocol</div>
-             <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div>
-             
+             <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div> 
+         </div>
+         <div className='card'>
+          <h3>Recent Tips</h3>
+
          </div>
       </section>
 
