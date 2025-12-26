@@ -175,8 +175,15 @@ export default function Landing() {
           <h3>Recent Tips</h3>
            <div className='label'>Latest 50 txs scanned</div>
            <div className='value'>{recentCount}</div>
-           
          </div>
+         <div className="card">
+    <h3>Last tip</h3>
+    <div className="label">Most recent transaction</div>
+    <div className="value" style={{ fontSize: 18 }}>
+      {lastTipMs ? new Date(lastTipMs).toLocaleString() : '—'}
+    </div>
+  </div>
+
       </section>
 
       <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
