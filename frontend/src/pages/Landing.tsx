@@ -31,6 +31,7 @@ export default function Landing() {
   const [lastTipMs, setLastTipMs] = useState<number | null>(null);
   const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
+  const [latestTipper, setLatestTipper] = useState<string | null>(null)
 
   useEffect(() => {
     (async () => {
