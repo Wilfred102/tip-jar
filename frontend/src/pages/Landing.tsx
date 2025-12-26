@@ -20,7 +20,8 @@ function microToStxDisplay(micro: string | bigint): string {
 
 function shortAddr(addr: string, left=6, right=6) {
   if (!addr) return '';
-  if (addr.length <= left + right)
+  if (addr.length <= left + right + 3) return addr;
+  return `${addr.slice(0, left)}...${addr.slice(-right)}`;
 }
 
 
