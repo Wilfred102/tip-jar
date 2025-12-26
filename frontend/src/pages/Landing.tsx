@@ -18,6 +18,11 @@ function microToStxDisplay(micro: string | bigint): string {
   return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
 }
 
+function shortAddr(addr: string, left=6, right=6) {
+  if (!addr) return '';
+  if (addr.length <= left + right)
+}
+
 
 export default function Landing() {
   const [totalTip, setTotalTips] = useState<string>('u0');
