@@ -166,7 +166,11 @@ export default function Landing() {
         </div>
       </section>
       <section className='grid' style={{ marginTop: 16 }}>
+         <div className='card'>
+          <h3>All-time tipped</h3>
+          <div className='label'>Total tips across the protocol</div>
 
+         </div>
       </section>
 
       <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
