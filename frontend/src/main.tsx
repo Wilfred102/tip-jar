@@ -5,6 +5,8 @@ import App from './App';
 import Landing from './pages/Landing';
 import { Toaster } from 'sonner';
 import { WALLETCONNECT_PROJECT_ID } from './config';
+import Creators from './pages/Creators';
+import Works from './pages/Works';
 
 // Reown AppKit (WalletConnect v2)
 // Adjust import path if your installed version differs.
@@ -36,10 +38,12 @@ try {
 const AppTree = (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/app" element={<App />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+  <Route path="/" element={<Landing />} />
+  <Route path="/app" element={<App />} />
+  <Route path="/creators" element={<Creators />} />
+  <Route path="/works" element={<Works />} />
+  <Route path="*" element={<Navigate to="/" replace />} />
+</Routes>
   </BrowserRouter>
 );
 
