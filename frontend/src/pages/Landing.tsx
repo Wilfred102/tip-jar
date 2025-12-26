@@ -109,8 +109,8 @@ export default function Landing() {
           <div>STX Tip Jar</div>
         </div>
         <div className="actions">
-          <a href="#creators" className="btn btn-secondary">For creators</a>
-          <Link to="/app" className="btn btn-primary">Enter App</Link>
+        <Link to="/creators" className="btn btn-secondary">For creators</Link>
+        <Link to="/app" className="btn btn-primary">Enter App</Link>
         </div>
       </header>
 
