@@ -24,6 +24,21 @@ function shortAddr(addr: string, left=6, right=6) {
   return `${addr.slice(0, left)}...${addr.slice(-right)}`;
 }
 
+// FIXED: Corrected timeAgo function with proper TypeScript typing and math
+const timeAgo = (ms: number): string => {
+  const diff = Date.now() - ms;
+
+  const seconds = Math.floor(diff / 1000); // FIXED: was dividing by 100
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return 'Just now';
+  if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`; // FIXED: added "ago"
+  return `${days} day${days > 1 ? 's' : ''} ago`; // FIXED: added "ago"
+};
+
 
 export default function Landing() {
   const [totalTip, setTotalTips] = useState<string>('u0');
@@ -66,7 +81,7 @@ export default function Landing() {
         );
         setRecentCount(tips.length);
         
-        // FIXED: Compute latest time and latest tipper
+        // Compute latest time and latest tipper
         let latestSeconds = 0;
         let latestSender: string | null = null;
         for (const tx of tips) {
@@ -197,15 +212,25 @@ export default function Landing() {
           <h3>Last tip</h3>
           <div className="label">Most recent transaction</div>
           <div className="value" style={{ fontSize: 18 }}>
-            {lastTipMs ? new Date(lastTipMs).toLocaleString() : '—'}
+            {lastTipMs
+              ? (() => {
+                  const d = new Date(lastTipMs);
+                  const pad = (n: number) => String(n).padStart(2, '0');
+                  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+                })()
+              : '—'}
           </div>
-          {/* ADDED: Show latest tipper */}
-          {latestTipper && (
+          {latestTipper && lastTipMs && (
             <div style={{ marginTop: 8 }}>
               <div className="label">From</div>
-              <code style={{ fontSize: 13, color: 'var(--text)' }} title={latestTipper}>
-                {shortAddr(latestTipper)}
-              </code>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <code style={{ fontSize: 13, color: 'var(--text)' }} title={latestTipper}>
+                  {shortAddr(latestTipper)}
+                </code>
+                <span style={{ fontSize: 12, opacity: 0.7 }}>
+                  · {timeAgo(lastTipMs)}
+                </span>
+              </div>
             </div>
           )}
         </div>
