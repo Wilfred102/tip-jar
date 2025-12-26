@@ -173,7 +173,7 @@ export default function Landing() {
          </div>
          <div className='card'>
           <h3>Recent Tips</h3>
-
+           <div className='label'>Latest 50 txs scanned</div>
          </div>
       </section>
 
