@@ -1,7 +1,106 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CONTRACT_ID } from '../config';
+import { StacksMainnet } from '@stacks/network';
+import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactions';
+
+
+function splitContractId(id: string) {
+  const [contractAddress, contractName]  = id.split('.');
+  return { contractAddress, contractName}
+}
+
+function microToStxDisplay(micro: string | bigint): string {
+  const m = typeof micro === 'string' ? BigInt(micro.replace(/^u/, '')) : micro;
+  const whole = m / 1_000_000n;
+  const frac = m % 1_000_000n;
+  const fracStr = frac.toString().padStart(6, '0').replace(/0+$/, '');
+  return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
+}
+
+function shortAddr(addr: string, left=6, right=6) {
+  if (!addr) return '';
+  if (addr.length <= left + right + 3) return addr;
+  return `${addr.slice(0, left)}...${addr.slice(-right)}`;
+}
+
+// FIXED: Corrected timeAgo function with proper TypeScript typing and math
+const timeAgo = (ms: number): string => {
+  const diff = Date.now() - ms;
+
+  const seconds = Math.floor(diff / 1000); // FIXED: was dividing by 100
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return 'Just now';
+  if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`; // FIXED: added "ago"
+  return `${days} day${days > 1 ? 's' : ''} ago`; // FIXED: added "ago"
+};
+
 
 export default function Landing() {
+  const [totalTip, setTotalTips] = useState<string>('u0');
+  const [recentCount, setRecentCount] = useState<number>(0);
+  const [lastTipMs, setLastTipMs] = useState<number | null>(null);
+  const [latestTipper, setLatestTipper] = useState<string | null>(null);
+  const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
+  const network = useMemo(() => new StacksMainnet(), []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await callReadOnlyFunction({
+          contractAddress,
+          contractName,
+          functionName: 'get-total-tips',
+          functionArgs: [],
+          network,
+          senderAddress: contractAddress,
+        });
+        const json = cvToJSON(res as ClarityValue);
+        setTotalTips((json as any).value as string);
+
+      } catch {}
+    })()
+  }, [contractAddress, contractName, network]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = `https://api.hiro.so/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`API ${r.status}`);
+        const data = await r.json();
+        const tips = (data.results || []).filter(
+          (tx: any) =>
+            tx.tx_type === 'contract_call' &&
+            tx.tx_status === 'success' &&
+            tx.contract_call?.function_name === 'tip'
+        );
+        setRecentCount(tips.length);
+        
+        // Compute latest time and latest tipper
+        let latestSeconds = 0;
+        let latestSender: string | null = null;
+        for (const tx of tips) {
+          const s =
+            (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
+            (typeof tx.block_time === 'number' && tx.block_time) ||
+            (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
+            0;
+          if (s > latestSeconds) {
+            latestSeconds = s;
+            latestSender = tx.sender_address || null;
+          }
+        }
+        setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
+        setLatestTipper(latestSender);
+      } catch { }
+    })()
+  }, [contractAddress, contractName]);
+
   return (
     <div className="container">
       <header className="nav">
@@ -95,6 +194,45 @@ export default function Landing() {
           <h3>Get started</h3>
           <p className="subtitle">Connect your wallet on the next page, set an amount and confirm the transaction.</p>
           <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
+        </div>
+      </section>
+
+      <section className='grid' style={{ marginTop: 16 }}>
+        <div className='card'>
+          <h3>All-time tipped</h3>
+          <div className='label'>Total tips across the protocol</div>
+          <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div> 
+        </div>
+        <div className='card'>
+          <h3>Recent Tips</h3>
+          <div className='label'>Latest 50 txs scanned</div>
+          <div className='value'>{recentCount}</div>
+        </div>
+        <div className="card">
+          <h3>Last tip</h3>
+          <div className="label">Most recent transaction</div>
+          <div className="value" style={{ fontSize: 18 }}>
+            {lastTipMs
+              ? (() => {
+                  const d = new Date(lastTipMs);
+                  const pad = (n: number) => String(n).padStart(2, '0');
+                  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+                })()
+              : '—'}
+          </div>
+          {latestTipper && lastTipMs && (
+            <div style={{ marginTop: 8 }}>
+              <div className="label">From</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <code style={{ fontSize: 13, color: 'var(--text)' }} title={latestTipper}>
+                  {shortAddr(latestTipper)}
+                </code>
+                <span style={{ fontSize: 12, opacity: 0.7 }}>
+                  · {timeAgo(lastTipMs)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
