@@ -174,6 +174,8 @@ export default function Landing() {
          <div className='card'>
           <h3>Recent Tips</h3>
            <div className='label'>Latest 50 txs scanned</div>
+           <div className='value'>{recentCount}</div>
+           
          </div>
       </section>
 
