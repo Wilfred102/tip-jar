@@ -29,9 +29,9 @@ export default function Landing() {
   const [totalTip, setTotalTips] = useState<string>('u0');
   const [recentCount, setRecentCount] = useState<number>(0);
   const [lastTipMs, setLastTipMs] = useState<number | null>(null);
+  const [latestTipper, setLatestTipper] = useState<string | null>(null);
   const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
-  const [latestTipper, setLatestTipper] = useState<string | null>(null)
 
   useEffect(() => {
     (async () => {
@@ -63,20 +63,29 @@ export default function Landing() {
             tx.tx_type === 'contract_call' &&
             tx.tx_status === 'success' &&
             tx.contract_call?.function_name === 'tip'
-          );
-          setRecentCount(tips.length);
-          const latestSeconds = tips.reduce((acc: number, tx: any) => {
-            const s =
+        );
+        setRecentCount(tips.length);
+        
+        // FIXED: Compute latest time and latest tipper
+        let latestSeconds = 0;
+        let latestSender: string | null = null;
+        for (const tx of tips) {
+          const s =
             (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
             (typeof tx.block_time === 'number' && tx.block_time) ||
             (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
             0;
-            return Math.max(acc, s);
-          }, 0);
-          setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
+          if (s > latestSeconds) {
+            latestSeconds = s;
+            latestSender = tx.sender_address || null;
+          }
+        }
+        setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
+        setLatestTipper(latestSender);
       } catch { }
     })()
   }, [contractAddress, contractName]);
+
   return (
     <div className="container">
       <header className="nav">
@@ -172,25 +181,34 @@ export default function Landing() {
           <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
         </div>
       </section>
+
       <section className='grid' style={{ marginTop: 16 }}>
-         <div className='card'>
+        <div className='card'>
           <h3>All-time tipped</h3>
           <div className='label'>Total tips across the protocol</div>
-             <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div> 
-         </div>
-         <div className='card'>
+          <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div> 
+        </div>
+        <div className='card'>
           <h3>Recent Tips</h3>
-           <div className='label'>Latest 50 txs scanned</div>
-           <div className='value'>{recentCount}</div>
-         </div>
-         <div className="card">
-    <h3>Last tip</h3>
-    <div className="label">Most recent transaction</div>
-    <div className="value" style={{ fontSize: 18 }}>
-      {lastTipMs ? new Date(lastTipMs).toLocaleString() : '—'}
-    </div>
-  </div>
-
+          <div className='label'>Latest 50 txs scanned</div>
+          <div className='value'>{recentCount}</div>
+        </div>
+        <div className="card">
+          <h3>Last tip</h3>
+          <div className="label">Most recent transaction</div>
+          <div className="value" style={{ fontSize: 18 }}>
+            {lastTipMs ? new Date(lastTipMs).toLocaleString() : '—'}
+          </div>
+          {/* ADDED: Show latest tipper */}
+          {latestTipper && (
+            <div style={{ marginTop: 8 }}>
+              <div className="label">From</div>
+              <code style={{ fontSize: 13, color: 'var(--text)' }} title={latestTipper}>
+                {shortAddr(latestTipper)}
+              </code>
+            </div>
+          )}
+        </div>
       </section>
 
       <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
