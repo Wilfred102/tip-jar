@@ -181,6 +181,14 @@ export default function App() {
     await Promise.all([fetchTotal(), fetchRecent()]);
   }, [fetchTotal, fetchRecent]);
 
+  const tipsHourly24 = useMemo(() => {
+    const now = Date.now();
+    const buckets: {label: string; stx: number; count: number } [] = [];
+    for (let i = 23; i>=0; i--){
+      const end = now - 1 * 3600_00;
+    }
+  })
+
   useEffect(() => {
     refresh();
   }, [refresh]);
