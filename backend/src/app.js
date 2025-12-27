@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/node';
 import creatorsRoute from './routes/creator.js';
 import worksRoute from './routes/works.js';
 import tipsRoute from './routes/tips.js';
+import monitorRoute from './routes/monitor.js';
 
 dotenv.config();
 
