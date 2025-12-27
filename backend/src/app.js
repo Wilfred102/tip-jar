@@ -41,6 +41,9 @@ app.use('/api/creators', creatorsRoute);
 app.use('/api/works', worksRoute);
 app.use('/api/tips', tipsRoute);
 
+
+Sentry.setupExpressErrorHandler(app);
+
 // health
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -49,5 +52,9 @@ connectDB(process.env.MONGODB_URI)
   .then(() => app.listen(PORT, () => console.log(`API on http://localhost:${PORT}`)))
   .catch((e) => {
     console.error('Failed to start:', e);
+    console.error('Failed to start:', e);
+    try {
+      Sentry.captureException(e);
+    } catch{}
     process.exit(1);
   });
