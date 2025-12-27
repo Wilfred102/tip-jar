@@ -3,6 +3,7 @@ import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 import Monitor from './pages/Monitor';
+import { CONTRACT_ID as CONFIG_CONTRACT_ID, WALLETCONNECT_PROJECT_ID as CONFIG_WALLETCONNECT_PROJECT_ID } from './config';
 import {
   ResponsiveContainer,
   AreaChart, Area,
@@ -10,8 +11,10 @@ import {
   XAxis, YAxis, Tooltip, CartesianGrid, Legend
 } from 'recharts';
 
-const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
-const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
+// const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
+const CONTRACT_ID = CONFIG_CONTRACT_ID;
+// const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
+const WALLETCONNECT_PROJECT_ID = CONFIG_WALLETCONNECT_PROJECT_ID;
 const network = new StacksMainnet();
 
 function splitContractId(id: string) {
@@ -144,7 +147,11 @@ export default function App() {
       const bTime = b.timeMs || new Date(b.timeIso || 0).getTime();
       return bTime - aTime;
     });
-    setRecent(items.slice(0, 10));
+    // setRecent(items.slice(items));
+    if (items.length ===0) {
+      throw new Error('no recent item')
+    }
+    setRecent(items);
   }, [contractAddress, contractName]);
 
   const fetchRecent = useCallback(async () => {
