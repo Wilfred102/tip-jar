@@ -40,6 +40,7 @@ app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 app.use('/api/creators', creatorsRoute);
 app.use('/api/works', worksRoute);
 app.use('/api/tips', tipsRoute);
+app.use('/api/monitor', monitorRoute)
 
 Sentry.setupExpressErrorHandler(app);
 
