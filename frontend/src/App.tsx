@@ -183,11 +183,46 @@ export default function App() {
 
   const tipsHourly24 = useMemo(() => {
     const now = Date.now();
-    const buckets: {label: string; stx: number; count: number } [] = [];
-    for (let i = 23; i>=0; i--){
-      const end = now - 1 * 3600_00;
+    const buckets: { label: string; stx: number; count: number }[] = [];
+    const toStx = (micro: string) => Number(BigInt(micro)) / 1_000_000;
+    for (let i = 23; i >= 0; i--) {
+      const end = now - i * 3600_000;
+      const start = end - 3600_000;
+      let stx = 0, count = 0;
+      for (const t of recent) {
+        const ts = typeof t.timeMs === 'number' && t.timeMs > 0
+          ? t.timeMs
+          : (t.timeIso ? Date.parse(t.timeIso) : 0);
+        if (ts >= start && ts < end) { stx += toStx(t.amountMicro); count++; }
+      }
+      const hour = new Date(end).getHours().toString().padStart(2, '0');
+      buckets.push({ label: `${hour}:00`, stx: Number(stx.toFixed(6)), count });
     }
-  })
+    return buckets;
+  }, [recent]);
+  
+  const tipsDaily14 = useMemo(() => {
+    const dayMs = 24 * 3600_000;
+    const endOfToday = new Date(); endOfToday.setHours(24, 0, 0, 0);
+    const endAligned = endOfToday.getTime();
+    const buckets: { label: string; stx: number; count: number }[] = [];
+    const toStx = (micro: string) => Number(BigInt(micro)) / 1_000_000;
+    for (let i = 13; i >= 0; i--) {
+      const end = endAligned - i * dayMs;
+      const start = end - dayMs;
+      let stx = 0, count = 0;
+      for (const t of recent) {
+        const ts = typeof t.timeMs === 'number' && t.timeMs > 0
+          ? t.timeMs
+          : (t.timeIso ? Date.parse(t.timeIso) : 0);
+        if (ts >= start && ts < end) { stx += toStx(t.amountMicro); count++; }
+      }
+      const d = new Date(start + 12 * 3600_000);
+      const label = `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+      buckets.push({ label, stx: Number(stx.toFixed(6)), count });
+    }
+    return buckets;
+  }, [recent]);
 
   useEffect(() => {
     refresh();
