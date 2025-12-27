@@ -475,6 +475,49 @@ export default function App() {
               )}
             </div>
           </section>
+          <section style={{ marginTop: '24px' }}>
+  <div className="card">
+    <h3>Tip activity (last 24h)</h3>
+    <div style={{ width: '100%', height: 260 }}>
+      <ResponsiveContainer>
+        <AreaChart data={tipsHourly24} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorStx" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#39FF14" stopOpacity={0.6}/>
+              <stop offset="95%" stopColor="#00FFA3" stopOpacity={0.05}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+          <Legend />
+          <Area type="monotone" dataKey="stx" name="STX" stroke="#39FF14" fillOpacity={1} fill="url(#colorStx)" />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</section>
+
+<section style={{ marginTop: '16px' }}>
+  <div className="card">
+    <h3>Daily tips (last 14d)</h3>
+    <div style={{ width: '100%', height: 260 }}>
+      <ResponsiveContainer>
+        <BarChart data={tipsDaily14} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+          <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+          <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fontSize: 11 }} width={40} />
+          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+          <Legend />
+          <Bar yAxisId="left" dataKey="stx" name="STX" fill="#00FFA3" />
+          <Bar yAxisId="right" dataKey="count" name="# tips" fill="#39FF14" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</section>
 
           <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>
