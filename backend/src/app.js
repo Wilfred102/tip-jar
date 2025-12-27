@@ -5,12 +5,23 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
+import * as Sentry from '@sentry/node';
 
 import creatorsRoute from './routes/creator.js';
 import worksRoute from './routes/works.js';
 import tipsRoute from './routes/tips.js';
+import monitorRoute from './routes/monitor.js';
 
 dotenv.config();
+
+//Initialize Sentry 
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  environment: process.env.NODE_ENV || 'development',
+  tracesSampleRate: process.env.SENTRY_TRACES_SAMPLE_RATE
+    ? Number(process.env.SENTRY_TRACES_SAMPLE_RATE)
+    : 0,
+});
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -30,6 +41,9 @@ app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 app.use('/api/creators', creatorsRoute);
 app.use('/api/works', worksRoute);
 app.use('/api/tips', tipsRoute);
+app.use('/api/monitor', monitorRoute)
+
+Sentry.setupExpressErrorHandler(app);
 
 // health
 app.get('/health', (_req, res) => res.json({ ok: true }));
@@ -39,5 +53,8 @@ connectDB(process.env.MONGODB_URI)
   .then(() => app.listen(PORT, () => console.log(`API on http://localhost:${PORT}`)))
   .catch((e) => {
     console.error('Failed to start:', e);
+    try {
+      Sentry.captureException(e);
+    } catch{}
     process.exit(1);
   });
