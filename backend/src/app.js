@@ -5,12 +5,15 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
+import * as Sentry from '@sentry/node';
 
 import creatorsRoute from './routes/creator.js';
 import worksRoute from './routes/works.js';
 import tipsRoute from './routes/tips.js';
 
 dotenv.config();
+
+//Initialize Sentry 
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -20,6 +23,7 @@ const ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 app.use(cors({ origin: ORIGIN, credentials: true }));
 app.use(express.json({ limit: '4mb' }));
 app.use(morgan('dev'));
+
 
 // static for uploads
 const __filename = fileURLToPath(import.meta.url);
