@@ -280,12 +280,13 @@ export default function App() {
             position: 'fixed',
             top: '20px',
             right: '20px',
-            background: 'linear-gradient(135deg, #39FF14, #00FFA3)',
-            color: '#0b1020',
+            background: 'rgba(15,23,42,0.95)', // neutral dark
+            color: '#e5e7eb', // light text
             padding: '12px 24px',
             borderRadius: '12px',
             fontWeight: 600,
-            boxShadow: '0 8px 24px rgba(57,255,20,0.35)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
             zIndex: 1000
           }}>
             {toastMsg}
