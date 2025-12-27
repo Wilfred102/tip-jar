@@ -426,9 +426,9 @@ export default function App() {
               )}
             </div>
           </section>
-          <section style={{ marginTop: '24px' }}>
+          {/* <section style={{ marginTop: '24px' }}>
   <Monitor />
-</section>
+</section> */}
 
           <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>

@@ -2,17 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
 import * as Sentry from '@sentry/node';
+import 'dotenv/config';
 
 import creatorsRoute from './routes/creator.js';
 import worksRoute from './routes/works.js';
 import tipsRoute from './routes/tips.js';
 import monitorRoute from './routes/monitor.js';
 
-dotenv.config();
 
 //Initialize Sentry 
 Sentry.init({
