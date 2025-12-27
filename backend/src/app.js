@@ -14,6 +14,10 @@ import tipsRoute from './routes/tips.js';
 dotenv.config();
 
 //Initialize Sentry 
+Sentry.init({
+  dsn: process.env.VITE_SENTRY_DNS || 'https://ad3192727f4bb9246f39d1cdb4f01db3@o4510606399832064.ingest.us.sentry.io/4510606421852160',
+  environment: process.env.NODE_ENV || 'development',
+})
 
 const app = express();
 const PORT = process.env.PORT || 5001;
