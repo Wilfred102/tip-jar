@@ -3,6 +3,12 @@ import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 import Monitor from './pages/Monitor';
+import {
+  ResponsiveContainer,
+  AreaChart, Area,
+  BarChart, Bar,
+  XAxis, YAxis, Tooltip, CartesianGrid, Legend
+} from 'recharts';
 
 const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
 const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
@@ -41,7 +47,7 @@ type RecentTip = {
   tipper: string; 
   amountMicro: string; 
   timeIso?: string; 
-  txid?: string 
+  txid?: string;
   timeMs?: number;
 };
 
@@ -101,7 +107,7 @@ export default function App() {
 
   const fetchRecentViaApi = useCallback(async () => {
     const base = 'https://api.hiro.so';
-    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=25`;
+    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=200`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`API ${r.status}`);
     const data = await r.json();
@@ -116,28 +122,28 @@ export default function App() {
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
 
-        const timeIso = 
-          tx.receipt_time_iso ||
-          tx.block_time_iso ||
-          tx.burn_block;
-
-          const seconds = 
-          (typeof tx.reciept_time === 'number' && tx.reciept_time)??
-          (typeof tx.block_time === 'number' && tx.block_time)??
-          (typeof tx.burn_block === 'number' && tx.burn_block)??
+        // Fixed: proper null coalescing
+        const seconds = 
+          (typeof tx.receipt_time === 'number' ? tx.receipt_time : null) ??
+          (typeof tx.block_time === 'number' ? tx.block_time : null) ??
+          (typeof tx.burn_block_time === 'number' ? tx.burn_block_time : null) ??
           0;
 
-          const timeMs = seconds * 1000;
+        const timeMs = seconds * 1000;
+        
         return {
           tipper: tx.sender_address as string,
           amountMicro,
-          timeIso: tx.burn_block_time_iso || tx.receipt_time_iso,
+          timeIso: tx.burn_block_time_iso || tx.receipt_time_iso || '',
           txid: tx.tx_id,
+          timeMs,
         } as RecentTip;
       });
-    items.sort((a: any, b: any) => 
-      new Date(b.timeIso || 0).getTime() - new Date(a.timeIso || 0).getTime()
-    );
+    items.sort((a: any, b: any) => {
+      const aTime = a.timeMs || new Date(a.timeIso || 0).getTime();
+      const bTime = b.timeMs || new Date(b.timeIso || 0).getTime();
+      return bTime - aTime;
+    });
     setRecent(items.slice(0, 10));
   }, [contractAddress, contractName]);
 
@@ -175,9 +181,52 @@ export default function App() {
     await Promise.all([fetchTotal(), fetchRecent()]);
   }, [fetchTotal, fetchRecent]);
 
+  const tipsHourly24 = useMemo(() => {
+    const now = Date.now();
+    const buckets: { label: string; stx: number; count: number }[] = [];
+    const toStx = (micro: string) => Number(BigInt(micro)) / 1_000_000;
+    for (let i = 23; i >= 0; i--) {
+      const end = now - i * 3600_000;
+      const start = end - 3600_000;
+      let stx = 0, count = 0;
+      for (const t of recent) {
+        const ts = typeof t.timeMs === 'number' && t.timeMs > 0
+          ? t.timeMs
+          : (t.timeIso ? Date.parse(t.timeIso) : 0);
+        if (ts >= start && ts < end) { stx += toStx(t.amountMicro); count++; }
+      }
+      const hour = new Date(end).getHours().toString().padStart(2, '0');
+      buckets.push({ label: `${hour}:00`, stx: Number(stx.toFixed(6)), count });
+    }
+    return buckets;
+  }, [recent]);
+  
+  const tipsDaily14 = useMemo(() => {
+    const dayMs = 24 * 3600_000;
+    const endOfToday = new Date(); endOfToday.setHours(24, 0, 0, 0);
+    const endAligned = endOfToday.getTime();
+    const buckets: { label: string; stx: number; count: number }[] = [];
+    const toStx = (micro: string) => Number(BigInt(micro)) / 1_000_000;
+    for (let i = 13; i >= 0; i--) {
+      const end = endAligned - i * dayMs;
+      const start = end - dayMs;
+      let stx = 0, count = 0;
+      for (const t of recent) {
+        const ts = typeof t.timeMs === 'number' && t.timeMs > 0
+          ? t.timeMs
+          : (t.timeIso ? Date.parse(t.timeIso) : 0);
+        if (ts >= start && ts < end) { stx += toStx(t.amountMicro); count++; }
+      }
+      const d = new Date(start + 12 * 3600_000);
+      const label = `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+      buckets.push({ label, stx: Number(stx.toFixed(6)), count });
+    }
+    return buckets;
+  }, [recent]);
+
   useEffect(() => {
     refresh();
-  }, []);
+  }, [refresh]);
 
   const tip = useCallback(async () => {
     try {
@@ -427,7 +476,47 @@ export default function App() {
             </div>
           </section>
           <section style={{ marginTop: '24px' }}>
-  <Monitor />
+  <div className="card">
+    <h3>Tip activity (last 24h)</h3>
+    <div style={{ width: '100%', height: 260 }}>
+      <ResponsiveContainer>
+        <AreaChart data={tipsHourly24} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorStx" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#39FF14" stopOpacity={0.6}/>
+              <stop offset="95%" stopColor="#00FFA3" stopOpacity={0.05}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+          <Legend />
+          <Area type="monotone" dataKey="stx" name="STX" stroke="#39FF14" fillOpacity={1} fill="url(#colorStx)" />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</section>
+
+<section style={{ marginTop: '16px' }}>
+  <div className="card">
+    <h3>Daily tips (last 14d)</h3>
+    <div style={{ width: '100%', height: 260 }}>
+      <ResponsiveContainer>
+        <BarChart data={tipsDaily14} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+          <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+          <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fontSize: 11 }} width={40} />
+          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+          <Legend />
+          <Bar yAxisId="left" dataKey="stx" name="STX" fill="#00FFA3" />
+          <Bar yAxisId="right" dataKey="count" name="# tips" fill="#39FF14" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
 </section>
 
           <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
