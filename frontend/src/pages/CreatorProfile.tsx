@@ -71,6 +71,12 @@ const [form, setForm] = useState<{ name: string; bio: string; walletAddress: str
           setCreator(cJson);
           setWorks(wJson || []);
           setTips(tJson || []);
+          setForm({
+            name: cJson?.name || '',
+            bio: cJson?.bio || '',
+            walletAddress: cJson?.walletAddress || '',
+            avatarUrl: cJson?.avatarUrl || ''
+          })
         }
       } catch (e: any) {
         if (mounted) setError(e?.message || 'Failed to load');
