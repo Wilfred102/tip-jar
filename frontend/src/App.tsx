@@ -3,6 +3,7 @@ import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 import Monitor from './pages/Monitor';
+import { CONTRACT_ID as CONFIG_CONTRACT_ID, WALLETCONNECT_PROJECT_ID as CONFIG_WALLETCONNECT_PROJECT_ID } from './config';
 import {
   ResponsiveContainer,
   AreaChart, Area,
