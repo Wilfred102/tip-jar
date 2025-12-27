@@ -42,6 +42,8 @@ const timeAgo = (ms: number): string => {
 
 export default function Landing() {
   const [recentTips, setRecentTips] = useState<{ sender: string; timestamp: number }[]>([]);
+  const [totalTip, setTotalTips] = useState<string>('0');
+  const [recentCount, setRecentCount] = useState<number>(0);
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
 
