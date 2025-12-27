@@ -130,7 +130,7 @@ export default function Landing() {
           <div className="actions">
             <Link to="/app" className="btn btn-primary btn-glow">Start tipping</Link>
             <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Learn about Stacks</a>
-            <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Browse works</a>
+            <a className="btn btn-secondary" href="/works" target="_blank" rel="noreferrer">Browse works</a>
 
           </div>
 
