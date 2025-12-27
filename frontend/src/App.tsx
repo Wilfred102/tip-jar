@@ -3,6 +3,12 @@ import { StacksMainnet } from '@stacks/network';
 import { openContractCall, showConnect, UserSession } from '@stacks/connect';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 import Monitor from './pages/Monitor';
+import {
+  ResponsiveContainer,
+  AreaChart, Area,
+  BarChart, Bar,
+  XAxis, YAxis, Tooltip, CartesianGrid, Legend
+} from 'recharts';
 
 const CONTRACT_ID = 'SP2A8V93XXB43Q8JXQNCS9EBFHZJ6A2HVXHC4F4ZB.tip-jar';
 const WALLETCONNECT_PROJECT_ID = '9610eb1bf7e1fede6d03bb61ae0dfe37';
