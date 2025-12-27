@@ -46,6 +46,11 @@ export default function CreatorProfile() {
   const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+const [saving, setSaving] = useState(false);
+const [form, setForm] = useState<{ name: string; bio: string; walletAddress: string; avatarUrl: string }>({
+  name: '', bio: '', walletAddress: '', avatarUrl: ''
+});
 
   useEffect(() => {
     let mounted = true;
