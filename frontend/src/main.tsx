@@ -42,6 +42,7 @@ const AppTree = (
   <Route path="/" element={<Landing />} />
   <Route path="/app" element={<App />} />
   <Route path="/creators" element={<Creators />} />
+  <Route path="/creators/:id" element={<CreatorProfile />} />
   <Route path="/works" element={<Works />} />
   <Route path="*" element={<Navigate to="/" replace />} />
 </Routes>
