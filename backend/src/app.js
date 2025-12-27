@@ -17,7 +17,9 @@ dotenv.config();
 Sentry.init({
   dsn: process.env.VITE_SENTRY_DNS || 'https://ad3192727f4bb9246f39d1cdb4f01db3@o4510606399832064.ingest.us.sentry.io/4510606421852160',
   environment: process.env.NODE_ENV || 'development',
-})
+  tracesSampleRate: 1.0
+  ? Number(process.env.SENTRY_TRACES_SAMPLE_RATE) : 0,
+});
 
 const app = express();
 const PORT = process.env.PORT || 5001;
