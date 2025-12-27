@@ -151,7 +151,7 @@ export default function App() {
     if (items.length ===0) {
       throw new Error('no recent item')
     }
-    setRecent(items.slice(items.length - 5));
+    setRecent(items);
   }, [contractAddress, contractName]);
 
   const fetchRecent = useCallback(async () => {
