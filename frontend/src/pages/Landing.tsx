@@ -6,8 +6,8 @@ import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactio
 
 
 function splitContractId(id: string) {
-  const [contractAddress, contractName]  = id.split('.');
-  return { contractAddress, contractName}
+  const [contractAddress, contractName] = id.split('.');
+  return { contractAddress, contractName }
 }
 
 function microToStxDisplay(micro: string | bigint): string {
@@ -18,7 +18,7 @@ function microToStxDisplay(micro: string | bigint): string {
   return fracStr.length ? `${whole}.${fracStr}` : `${whole}`;
 }
 
-function shortAddr(addr: string, left=6, right=6) {
+function shortAddr(addr: string, left = 6, right = 6) {
   if (!addr) return '';
   if (addr.length <= left + right + 3) return addr;
   return `${addr.slice(0, left)}...${addr.slice(-right)}`;
@@ -41,11 +41,8 @@ const timeAgo = (ms: number): string => {
 
 
 export default function Landing() {
-  const [totalTip, setTotalTips] = useState<string>('u0');
-  const [recentCount, setRecentCount] = useState<number>(0);
-  const [lastTipMs, setLastTipMs] = useState<number | null>(null);
-  const [latestTipper, setLatestTipper] = useState<string | null>(null);
-  const {contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
+  const [recentTips, setRecentTips] = useState<{ sender: string; timestamp: number }[]>([]);
+  const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
 
   useEffect(() => {
@@ -62,7 +59,7 @@ export default function Landing() {
         const json = cvToJSON(res as ClarityValue);
         setTotalTips((json as any).value as string);
 
-      } catch {}
+      } catch { }
     })()
   }, [contractAddress, contractName, network]);
 
@@ -80,23 +77,21 @@ export default function Landing() {
             tx.contract_call?.function_name === 'tip'
         );
         setRecentCount(tips.length);
-        
-        // Compute latest time and latest tipper
-        let latestSeconds = 0;
-        let latestSender: string | null = null;
-        for (const tx of tips) {
+
+        // Compute latest 5 tips
+        const sortedTips = tips.map((tx: any) => {
           const s =
             (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
             (typeof tx.block_time === 'number' && tx.block_time) ||
             (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
             0;
-          if (s > latestSeconds) {
-            latestSeconds = s;
-            latestSender = tx.sender_address || null;
-          }
-        }
-        setLastTipMs(latestSeconds ? latestSeconds * 1000 : null);
-        setLatestTipper(latestSender);
+          return {
+            sender: tx.sender_address || 'Unknown',
+            timestamp: s ? s * 1000 : Date.now()
+          };
+        }).sort((a: any, b: any) => b.timestamp - a.timestamp).slice(0, 5);
+
+        setRecentTips(sortedTips);
       } catch { }
     })()
   }, [contractAddress, contractName]);
@@ -109,8 +104,8 @@ export default function Landing() {
           <div>STX Tip Jar</div>
         </div>
         <div className="actions">
-        <Link to="/creators" className="btn btn-secondary">For creators</Link>
-        <Link to="/app" className="btn btn-primary">Enter App</Link>
+          <Link to="/creators" className="btn btn-secondary">For creators</Link>
+          <Link to="/app" className="btn btn-primary">Enter App</Link>
         </div>
       </header>
 
@@ -203,7 +198,7 @@ export default function Landing() {
         <div className='card'>
           <h3>All-time tipped</h3>
           <div className='label'>Total tips across the protocol</div>
-          <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div> 
+          <div className='value gradient-text'>{microToStxDisplay(totalTip)} STX</div>
         </div>
         <div className='card'>
           <h3>Recent Tips</h3>
@@ -211,30 +206,25 @@ export default function Landing() {
           <div className='value'>{recentCount}</div>
         </div>
         <div className="card">
-          <h3>Last tip</h3>
-          <div className="label">Most recent transaction</div>
-          <div className="value" style={{ fontSize: 18 }}>
-            {lastTipMs
-              ? (() => {
-                  const d = new Date(lastTipMs);
-                  const pad = (n: number) => String(n).padStart(2, '0');
-                  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
-                })()
-              : '—'}
+          <h3>Last 5 tips</h3>
+          <div className="label">Most recent transactions</div>
+
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recentTips.length > 0 ? (
+              recentTips.map((tip, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14 }}>
+                  <code style={{ fontSize: 13, color: 'var(--text)' }} title={tip.sender}>
+                    {shortAddr(tip.sender)}
+                  </code>
+                  <span style={{ fontSize: 12, opacity: 0.7 }}>
+                    {timeAgo(tip.timestamp)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="value" style={{ fontSize: 18 }}>—</div>
+            )}
           </div>
-          {latestTipper && lastTipMs && (
-            <div style={{ marginTop: 8 }}>
-              <div className="label">From</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <code style={{ fontSize: 13, color: 'var(--text)' }} title={latestTipper}>
-                  {shortAddr(latestTipper)}
-                </code>
-                <span style={{ fontSize: 12, opacity: 0.7 }}>
-                  · {timeAgo(lastTipMs)}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
