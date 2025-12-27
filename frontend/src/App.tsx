@@ -41,7 +41,7 @@ type RecentTip = {
   tipper: string; 
   amountMicro: string; 
   timeIso?: string; 
-  txid?: string 
+  txid?: string;
   timeMs?: number;
 };
 
@@ -116,28 +116,28 @@ export default function App() {
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
 
-        const timeIso = 
-          tx.receipt_time_iso ||
-          tx.block_time_iso ||
-          tx.burn_block;
-
-          const seconds = 
-          (typeof tx.reciept_time === 'number' && tx.reciept_time)??
-          (typeof tx.block_time === 'number' && tx.block_time)??
-          (typeof tx.burn_block === 'number' && tx.burn_block)??
+        // Fixed: proper null coalescing
+        const seconds = 
+          (typeof tx.receipt_time === 'number' ? tx.receipt_time : null) ??
+          (typeof tx.block_time === 'number' ? tx.block_time : null) ??
+          (typeof tx.burn_block_time === 'number' ? tx.burn_block_time : null) ??
           0;
 
-          const timeMs = seconds * 1000;
+        const timeMs = seconds * 1000;
+        
         return {
           tipper: tx.sender_address as string,
           amountMicro,
-          timeIso: tx.burn_block_time_iso || tx.receipt_time_iso,
+          timeIso: tx.burn_block_time_iso || tx.receipt_time_iso || '',
           txid: tx.tx_id,
+          timeMs,
         } as RecentTip;
       });
-    items.sort((a: any, b: any) => 
-      new Date(b.timeIso || 0).getTime() - new Date(a.timeIso || 0).getTime()
-    );
+    items.sort((a: any, b: any) => {
+      const aTime = a.timeMs || new Date(a.timeIso || 0).getTime();
+      const bTime = b.timeMs || new Date(b.timeIso || 0).getTime();
+      return bTime - aTime;
+    });
     setRecent(items.slice(0, 10));
   }, [contractAddress, contractName]);
 
@@ -177,7 +177,7 @@ export default function App() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [refresh]);
 
   const tip = useCallback(async () => {
     try {
@@ -426,9 +426,6 @@ export default function App() {
               )}
             </div>
           </section>
-          {/* <section style={{ marginTop: '24px' }}>
-  <Monitor />
-</section> */}
 
           <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>
