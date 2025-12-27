@@ -147,7 +147,11 @@ export default function App() {
       const bTime = b.timeMs || new Date(b.timeIso || 0).getTime();
       return bTime - aTime;
     });
-    setRecent(items.slice(0, 10));
+    // setRecent(items.slice(items));
+    if (items.length ===0) {
+      throw new Error('no recent item')
+    }
+    setRecent(items.slice(items.length - 5));
   }, [contractAddress, contractName]);
 
   const fetchRecent = useCallback(async () => {
