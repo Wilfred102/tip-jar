@@ -208,6 +208,7 @@ export default function Landing() {
             .slice(0, 3);
 
           setTopCreators(sortedCreators);
+          setWorks(works.slice(0, 6)); // Save first 6 works to display
         }
 
       } catch (e) {
