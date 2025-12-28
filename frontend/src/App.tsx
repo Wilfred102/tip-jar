@@ -111,8 +111,8 @@ export default function App() {
 
   const fetchRecentViaApi = useCallback(async () => {
     const base = 'https://api.hiro.so';
-    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
-    const r = await fetch(url);
+    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=200`;
+    const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) throw new Error(`API ${r.status}`);
     const data = await r.json();
     const items = (data.results || [])
