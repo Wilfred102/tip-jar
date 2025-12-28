@@ -63,7 +63,8 @@ export default function Creators() {
 
   async function uploadWork(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     setLoading(true);
     setError('');
     try {
@@ -72,7 +73,7 @@ export default function Creators() {
         body: fd,
       });
       if (!r.ok) throw new Error('Failed to upload work');
-      (e.currentTarget as HTMLFormElement).reset();
+      form.reset();
       navigate('/works');
     } catch (e: any) {
       setError(e.message || 'Failed to upload work');
