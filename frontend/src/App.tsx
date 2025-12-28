@@ -113,13 +113,16 @@ export default function App() {
     const base = 'https://api.hiro.so';
     const addr = `${contractAddress}.${contractName}`;
 
-    const [txRes, mempoolRes] = await Promise.all([
-      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=200`, { cache: 'no-store' }),
-      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=200`, { cache: 'no-store' })
+    const results = await Promise.allSettled([
+      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=50`, { cache: 'no-store' }),
+      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=50`, { cache: 'no-store' })
     ]);
 
-    const txData = txRes.ok ? await txRes.json() : { results: [] };
-    const mempoolData = mempoolRes.ok ? await mempoolRes.json() : { results: [] };
+    const txRes = results[0].status === 'fulfilled' ? results[0].value : null;
+    const mempoolRes = results[1].status === 'fulfilled' ? results[1].value : null;
+
+    const txData = txRes && txRes.ok ? await txRes.json() : { results: [] };
+    const mempoolData = mempoolRes && mempoolRes.ok ? await mempoolRes.json() : { results: [] };
 
     const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
 
