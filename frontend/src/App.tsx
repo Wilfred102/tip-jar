@@ -111,14 +111,22 @@ export default function App() {
 
   const fetchRecentViaApi = useCallback(async () => {
     const base = 'https://api.hiro.so';
-    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=200`;
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error(`API ${r.status}`);
-    const data = await r.json();
-    const items = (data.results || [])
+    const addr = `${contractAddress}.${contractName}`;
+
+    const [txRes, mempoolRes] = await Promise.all([
+      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=50`, { cache: 'no-store' }),
+      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=50`, { cache: 'no-store' })
+    ]);
+
+    const txData = txRes.ok ? await txRes.json() : { results: [] };
+    const mempoolData = mempoolRes.ok ? await mempoolRes.json() : { results: [] };
+
+    const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
+
+    const items = allTxs
       .filter((tx: any) =>
         tx.tx_type === 'contract_call' &&
-        tx.tx_status === 'success' &&
+        (tx.tx_status === 'success' || tx.tx_status === 'pending') &&
         tx.contract_call?.function_name === 'tip'
       )
       .map((tx: any) => {

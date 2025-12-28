@@ -68,14 +68,24 @@ export default function Landing() {
   useEffect(() => {
     (async () => {
       try {
-        const url = `https://api.hiro.so/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`API ${r.status}`);
-        const data = await r.json();
-        const tips = (data.results || []).filter(
+        const base = 'https://api.hiro.so';
+        const addr = `${contractAddress}.${contractName}`;
+        
+        // Fetch confirmed and mempool in parallel
+        const [txRes, mempoolRes] = await Promise.all([
+          fetch(`${base}/extended/v1/address/${addr}/transactions?limit=50`, { cache: 'no-store' }),
+          fetch(`${base}/extended/v1/address/${addr}/mempool?limit=50`, { cache: 'no-store' })
+        ]);
+
+        const txData = txRes.ok ? await txRes.json() : { results: [] };
+        const mempoolData = mempoolRes.ok ? await mempoolRes.json() : { results: [] };
+
+        const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
+
+        const tips = allTxs.filter(
           (tx: any) =>
             tx.tx_type === 'contract_call' &&
-            tx.tx_status === 'success' &&
+            (tx.tx_status === 'success' || tx.tx_status === 'pending') &&
             tx.contract_call?.function_name === 'tip'
         );
         setRecentCount(tips.length);
@@ -204,7 +214,7 @@ export default function Landing() {
         </div>
         <div className='card'>
           <h3>Recent Tips</h3>
-          <div className='label'>Latest 50 txs scanned</div>
+          <div className='label'>Latest 200 txs scanned</div>
           <div className='value'>{recentCount}</div>
         </div>
         <div className="card">
