@@ -483,15 +483,26 @@ export default function App() {
                       </li>
                     ))}
                   </ul>
-                  {visibleCount < recent.length && (
-                    <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => setVisibleCount(prev => prev + 6)}
-                        style={{ width: '100%' }}
-                      >
-                        Show more
-                      </button>
+                  {(visibleCount < recent.length || visibleCount > 6) && (
+                    <div style={{ marginTop: '16px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                      {visibleCount < recent.length && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setVisibleCount(prev => prev + 6)}
+                          style={{ flex: 1 }}
+                        >
+                          Show more
+                        </button>
+                      )}
+                      {visibleCount > 6 && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setVisibleCount(6)}
+                          style={{ flex: 1 }}
+                        >
+                          Show less
+                        </button>
+                      )}
                     </div>
                   )}
                 </>
