@@ -59,6 +59,7 @@ export default function App() {
   const [amountStx, setAmountStx] = useState('0.1');
   const [totalTips, setTotalTips] = useState<string>('u0');
   const [recent, setRecent] = useState<RecentTip[]>([]);
+  const [visibleCount, setVisibleCount] = useState(6);
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [wcModalOpen, setWcModalOpen] = useState(false);
@@ -110,20 +111,39 @@ export default function App() {
 
   const fetchRecentViaApi = useCallback(async () => {
     const base = 'https://api.hiro.so';
-    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`API ${r.status}`);
-    const data = await r.json();
-    const items = (data.results || [])
+    const addr = `${contractAddress}.${contractName}`;
+
+    const [txRes, mempoolRes] = await Promise.all([
+      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=200`, { cache: 'no-store' }),
+      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=200`, { cache: 'no-store' })
+    ]);
+
+    const txData = txRes.ok ? await txRes.json() : { results: [] };
+    const mempoolData = mempoolRes.ok ? await mempoolRes.json() : { results: [] };
+
+    const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
+
+    const items = allTxs
       .filter((tx: any) =>
         tx.tx_type === 'contract_call' &&
-        tx.tx_status === 'success' &&
+        (tx.tx_status === 'success' || tx.tx_status === 'pending' || tx.tx_status === 'abort_by_response') &&
         tx.contract_call?.function_name === 'tip'
       )
       .map((tx: any) => {
         const arg = tx.contract_call?.function_args?.[0];
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
+
+        // If pending, use current time
+        if (tx.tx_status === 'pending') {
+          return {
+            tipper: tx.sender_address as string,
+            amountMicro,
+            timeIso: new Date().toISOString(),
+            txid: tx.tx_id,
+            timeMs: Date.now(),
+          } as RecentTip;
+        }
 
         const seconds =
           (typeof tx.receipt_time === 'number' ? tx.receipt_time : null) ??
@@ -447,40 +467,64 @@ export default function App() {
               <h3>Recent tips</h3>
               {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
               {recent.length > 0 && (
-                <ul className="tips-list">
-                  {recent.map((r, idx) => (
-                    <li key={r.txid || r.index || idx} className="tip-item">
-                      <div className="tip-avatar" title={r.tipper}>
-                        {r.tipper.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="tip-info">
-                        <div className="tip-row">
-                          <span className="tip-addr">
-                            <code title={r.tipper}>{shortAddr(r.tipper)}</code>
-                          </span>
-                          <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                <>
+                  <ul className="tips-list">
+                    {recent.slice(0, visibleCount).map((r, idx) => (
+                      <li key={r.txid || r.index || idx} className="tip-item">
+                        <div className="tip-avatar" title={r.tipper}>
+                          {r.tipper.slice(0, 2).toUpperCase()}
                         </div>
-                        <div className="tip-meta">
-                          {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
-                            <span>{new Date(r.timeMs).toLocaleString()}</span>
-                          ) : r.timeIso && (
-                            <span>{new Date(r.timeIso).toLocaleString()}</span>
-                          )}
-                          {r.txid && (
-                            <a
-                              className="tip-link"
-                              href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              view
-                            </a>
-                          )}
+                        <div className="tip-info">
+                          <div className="tip-row">
+                            <span className="tip-addr">
+                              <code title={r.tipper}>{shortAddr(r.tipper)}</code>
+                            </span>
+                            <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                          </div>
+                          <div className="tip-meta">
+                            {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
+                              <span>{new Date(r.timeMs).toLocaleString()}</span>
+                            ) : r.timeIso && (
+                              <span>{new Date(r.timeIso).toLocaleString()}</span>
+                            )}
+                            {r.txid && (
+                              <a
+                                className="tip-link"
+                                href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                view
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                  {(visibleCount < recent.length || visibleCount > 6) && (
+                    <div style={{ marginTop: '16px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                      {visibleCount < recent.length && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setVisibleCount(prev => prev + 6)}
+                          style={{ flex: 1 }}
+                        >
+                          Show more
+                        </button>
+                      )}
+                      {visibleCount > 6 && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setVisibleCount(6)}
+                          style={{ flex: 1 }}
+                        >
+                          Show less
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </section>
