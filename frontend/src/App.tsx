@@ -59,6 +59,7 @@ export default function App() {
   const [amountStx, setAmountStx] = useState('0.1');
   const [totalTips, setTotalTips] = useState<string>('u0');
   const [recent, setRecent] = useState<RecentTip[]>([]);
+  const [visibleCount, setVisibleCount] = useState(6);
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [wcModalOpen, setWcModalOpen] = useState(false);
@@ -447,40 +448,53 @@ export default function App() {
               <h3>Recent tips</h3>
               {recent.length === 0 && <div className="subtitle">No tips yet.</div>}
               {recent.length > 0 && (
-                <ul className="tips-list">
-                  {recent.map((r, idx) => (
-                    <li key={r.txid || r.index || idx} className="tip-item">
-                      <div className="tip-avatar" title={r.tipper}>
-                        {r.tipper.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="tip-info">
-                        <div className="tip-row">
-                          <span className="tip-addr">
-                            <code title={r.tipper}>{shortAddr(r.tipper)}</code>
-                          </span>
-                          <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                <>
+                  <ul className="tips-list">
+                    {recent.slice(0, visibleCount).map((r, idx) => (
+                      <li key={r.txid || r.index || idx} className="tip-item">
+                        <div className="tip-avatar" title={r.tipper}>
+                          {r.tipper.slice(0, 2).toUpperCase()}
                         </div>
-                        <div className="tip-meta">
-                          {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
-                            <span>{new Date(r.timeMs).toLocaleString()}</span>
-                          ) : r.timeIso && (
-                            <span>{new Date(r.timeIso).toLocaleString()}</span>
-                          )}
-                          {r.txid && (
-                            <a
-                              className="tip-link"
-                              href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              view
-                            </a>
-                          )}
+                        <div className="tip-info">
+                          <div className="tip-row">
+                            <span className="tip-addr">
+                              <code title={r.tipper}>{shortAddr(r.tipper)}</code>
+                            </span>
+                            <span className="tip-amount">{microToStxDisplay(r.amountMicro)} STX</span>
+                          </div>
+                          <div className="tip-meta">
+                            {typeof r.timeMs === 'number' && r.timeMs > 0 ? (
+                              <span>{new Date(r.timeMs).toLocaleString()}</span>
+                            ) : r.timeIso && (
+                              <span>{new Date(r.timeIso).toLocaleString()}</span>
+                            )}
+                            {r.txid && (
+                              <a
+                                className="tip-link"
+                                href={`https://explorer.hiro.so/txid/${r.txid}?chain=mainnet`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                view
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                  {visibleCount < recent.length && (
+                    <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setVisibleCount(prev => prev + 6)}
+                        style={{ width: '100%' }}
+                      >
+                        Show more
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </section>
