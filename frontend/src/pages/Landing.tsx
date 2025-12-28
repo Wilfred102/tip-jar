@@ -70,28 +70,38 @@ export default function Landing() {
       try {
         const base = 'https://api.hiro.so';
         const addr = `${contractAddress}.${contractName}`;
-        
+
         // Fetch confirmed and mempool in parallel
         const [txRes, mempoolRes] = await Promise.all([
-          fetch(`${base}/extended/v1/address/${addr}/transactions?limit=50`, { cache: 'no-store' }),
-          fetch(`${base}/extended/v1/address/${addr}/mempool?limit=50`, { cache: 'no-store' })
+          fetch(`${base}/extended/v1/address/${addr}/transactions?limit=200`, { cache: 'no-store' }),
+          fetch(`${base}/extended/v1/address/${addr}/mempool?limit=200`, { cache: 'no-store' })
         ]);
 
         const txData = txRes.ok ? await txRes.json() : { results: [] };
         const mempoolData = mempoolRes.ok ? await mempoolRes.json() : { results: [] };
 
         const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
+        console.log('All Txs:', allTxs.length, allTxs);
 
         const tips = allTxs.filter(
           (tx: any) =>
             tx.tx_type === 'contract_call' &&
-            (tx.tx_status === 'success' || tx.tx_status === 'pending') &&
+            (tx.tx_status === 'success' || tx.tx_status === 'pending' || tx.tx_status === 'abort_by_response') &&
             tx.contract_call?.function_name === 'tip'
         );
+        console.log('Filtered Tips:', tips.length, tips);
         setRecentCount(tips.length);
 
         // Compute latest 5 tips
         const sortedTips = tips.map((tx: any) => {
+          // If pending, use current time
+          if (tx.tx_status === 'pending') {
+            return {
+              sender: tx.sender_address || 'Unknown',
+              timestamp: Date.now()
+            };
+          }
+
           const s =
             (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
             (typeof tx.block_time === 'number' && tx.block_time) ||

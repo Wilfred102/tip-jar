@@ -114,8 +114,8 @@ export default function App() {
     const addr = `${contractAddress}.${contractName}`;
 
     const [txRes, mempoolRes] = await Promise.all([
-      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=50`, { cache: 'no-store' }),
-      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=50`, { cache: 'no-store' })
+      fetch(`${base}/extended/v1/address/${addr}/transactions?limit=200`, { cache: 'no-store' }),
+      fetch(`${base}/extended/v1/address/${addr}/mempool?limit=200`, { cache: 'no-store' })
     ]);
 
     const txData = txRes.ok ? await txRes.json() : { results: [] };
@@ -126,13 +126,24 @@ export default function App() {
     const items = allTxs
       .filter((tx: any) =>
         tx.tx_type === 'contract_call' &&
-        (tx.tx_status === 'success' || tx.tx_status === 'pending') &&
+        (tx.tx_status === 'success' || tx.tx_status === 'pending' || tx.tx_status === 'abort_by_response') &&
         tx.contract_call?.function_name === 'tip'
       )
       .map((tx: any) => {
         const arg = tx.contract_call?.function_args?.[0];
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
+
+        // If pending, use current time
+        if (tx.tx_status === 'pending') {
+          return {
+            tipper: tx.sender_address as string,
+            amountMicro,
+            timeIso: new Date().toISOString(),
+            txid: tx.tx_id,
+            timeMs: Date.now(),
+          } as RecentTip;
+        }
 
         const seconds =
           (typeof tx.receipt_time === 'number' ? tx.receipt_time : null) ??
