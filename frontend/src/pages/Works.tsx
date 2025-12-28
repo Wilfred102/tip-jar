@@ -10,6 +10,7 @@ type Work = {
   fileUrl: string;
   fileType: string;
   coverUrl?: string;
+  workUrl?: string;
   creator: Creator;
 };
 
@@ -94,6 +95,19 @@ export default function Works() {
             </div>
             <div style={{ marginBottom: 8 }}>{renderMedia(w)}</div>
             {w.description && <p className="subtitle" style={{ marginTop: 8 }}>{w.description}</p>}
+            {w.workUrl && (
+              <div style={{ marginTop: 8 }}>
+                <a
+                  href={w.workUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tip-link"
+                  style={{ fontSize: '0.875rem' }}
+                >
+                  🔗 View external link
+                </a>
+              </div>
+            )}
             <div className="actions" style={{ marginTop: 10 }}>
               <Link className="btn btn-primary" to="/app">Tip this creator</Link>
               <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More from creator</button>
