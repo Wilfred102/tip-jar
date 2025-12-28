@@ -162,46 +162,52 @@ export default function Landing() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${BACKEND_API_URL}/api/tips`);
-        if (!res.ok) return;
-        const tips = await res.json();
+        const [tipsRes, worksRes] = await Promise.all([
+          fetch(`${BACKEND_API_URL}/api/tips`),
+          fetch(`${BACKEND_API_URL}/api/works`)
+        ]);
 
-        // Aggregate by creator
-        const creatorMap = new Map();
-        const tippers = new Set();
-        let maxTip = 0n;
-        let totalSum = 0n;
+        if (tipsRes.ok) {
+          const tips = await tipsRes.json();
+          // Stats from tips
+          const tippers = new Set();
+          let maxTip = 0n;
+          let totalSum = 0n;
 
-        for (const t of tips) {
-          const amt = BigInt(t.amountMicro);
-          if (amt > maxTip) maxTip = amt;
-          totalSum += amt;
-          tippers.add(t.senderAddress);
-
-          // Handle populated creator object or ID
-          const cId = t.creator?._id || t.creator || 'unknown';
-          const cName = t.creator?.name;
-          const cAddr = t.creator?.walletAddress;
-
-          if (cName) { // Only count if we have a name (valid creator)
-            if (!creatorMap.has(cId)) {
-              creatorMap.set(cId, { name: cName, address: cAddr, total: 0n });
-            }
-            const c = creatorMap.get(cId);
-            c.total += amt;
+          for (const t of tips) {
+            const amt = BigInt(t.amountMicro);
+            if (amt > maxTip) maxTip = amt;
+            totalSum += amt;
+            tippers.add(t.senderAddress);
           }
+
+          setStats({
+            highest: maxTip,
+            uniqueTippers: tippers.size,
+            avg: tips.length ? totalSum / BigInt(tips.length) : 0n
+          });
         }
 
-        const sortedCreators = Array.from(creatorMap.values())
-          .sort((a, b) => (b.total > a.total ? 1 : -1))
-          .slice(0, 3);
+        if (worksRes.ok) {
+          const works = await worksRes.json();
+          const creatorMap = new Map();
 
-        setTopCreators(sortedCreators);
-        setStats({
-          highest: maxTip,
-          uniqueTippers: tippers.size,
-          avg: tips.length ? totalSum / BigInt(tips.length) : 0n
-        });
+          for (const w of works) {
+            const c = w.creator;
+            if (c && c._id) {
+              if (!creatorMap.has(c._id)) {
+                creatorMap.set(c._id, { name: c.name, address: c.walletAddress, count: 0 });
+              }
+              creatorMap.get(c._id).count++;
+            }
+          }
+
+          const sortedCreators = Array.from(creatorMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+
+          setTopCreators(sortedCreators);
+        }
 
       } catch (e) {
         console.error('Backend fetch failed', e);
@@ -341,7 +347,7 @@ export default function Landing() {
         </div>
         <div className="card">
           <h3>Top Creators</h3>
-          <div className="label">Most supported (last 200 tips)</div>
+          <div className="label">Most prolific</div>
           <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {topCreators.length > 0 ? (
               topCreators.map((c, i) => (
@@ -350,7 +356,7 @@ export default function Landing() {
                     <span style={{ fontWeight: 'bold' }}>#{i + 1}</span>
                     <span>{c.name || shortAddr(c.address)}</span>
                   </div>
-                  <span style={{ fontWeight: 'bold' }}>{microToStxDisplay(c.total)} STX</span>
+                  <span style={{ fontWeight: 'bold' }}>{c.count} works</span>
                 </div>
               ))
             ) : (
