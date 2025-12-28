@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CONTRACT_ID } from '../config';
 import { StacksMainnet } from '@stacks/network';
-import { callReadOnlyFunction, ClarityValue, cvToJSON } from '@stacks/transactions';
+import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 
 
 function splitContractId(id: string) {
@@ -26,6 +26,7 @@ function shortAddr(addr: string, left = 6, right = 6) {
 
 // FIXED: Corrected timeAgo function with proper TypeScript typing and math
 const timeAgo = (ms: number): string => {
+  if (!ms) return '';
   const diff = Date.now() - ms;
 
   const seconds = Math.floor(diff / 1000); // FIXED: was dividing by 100
@@ -67,6 +68,7 @@ export default function Landing() {
 
   useEffect(() => {
     (async () => {
+      let foundTips: any[] = [];
       try {
         const base = 'https://api.hiro.so';
         const addr = `${contractAddress}.${contractName}`;
@@ -83,38 +85,71 @@ export default function Landing() {
         const allTxs = [...(mempoolData.results || []), ...(txData.results || [])];
         console.log('All Txs:', allTxs.length, allTxs);
 
-        const tips = allTxs.filter(
+        foundTips = allTxs.filter(
           (tx: any) =>
             tx.tx_type === 'contract_call' &&
             (tx.tx_status === 'success' || tx.tx_status === 'pending' || tx.tx_status === 'abort_by_response') &&
             tx.contract_call?.function_name === 'tip'
         );
-        console.log('Filtered Tips:', tips.length, tips);
-        setRecentCount(tips.length);
+        console.log('Filtered Tips:', foundTips.length, foundTips);
 
-        // Compute latest 5 tips
-        const sortedTips = tips.map((tx: any) => {
-          // If pending, use current time
-          if (tx.tx_status === 'pending') {
+        if (foundTips.length > 0) {
+          setRecentCount(foundTips.length);
+          // Compute latest 5 tips
+          const sortedTips = foundTips.map((tx: any) => {
+            // If pending, use current time
+            if (tx.tx_status === 'pending') {
+              return {
+                sender: tx.sender_address || 'Unknown',
+                timestamp: Date.now()
+              };
+            }
+
+            const s =
+              (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
+              (typeof tx.block_time === 'number' && tx.block_time) ||
+              (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
+              0;
             return {
               sender: tx.sender_address || 'Unknown',
-              timestamp: Date.now()
+              timestamp: s ? s * 1000 : Date.now()
             };
-          }
+          }).sort((a: any, b: any) => b.timestamp - a.timestamp).slice(0, 5);
 
-          const s =
-            (typeof tx.receipt_time === 'number' && tx.receipt_time) ||
-            (typeof tx.block_time === 'number' && tx.block_time) ||
-            (typeof tx.burn_block_time === 'number' && tx.burn_block_time) ||
-            0;
-          return {
-            sender: tx.sender_address || 'Unknown',
-            timestamp: s ? s * 1000 : Date.now()
-          };
-        }).sort((a: any, b: any) => b.timestamp - a.timestamp).slice(0, 5);
+          setRecentTips(sortedTips);
+          return;
+        }
+      } catch (e) {
+        console.error('API fetch failed', e);
+      }
 
-        setRecentTips(sortedTips);
-      } catch { }
+      // Fallback to contract if API failed or returned no tips
+      if (foundTips.length === 0) {
+        console.log('Using contract fallback');
+        const out: any[] = [];
+        for (let i = 0; i < 5; i++) {
+          try {
+            const res = await callReadOnlyFunction({
+              contractAddress,
+              contractName,
+              functionName: 'get-recent-tip',
+              functionArgs: [uintCV(i)],
+              network,
+              senderAddress: contractAddress,
+            });
+            const json = cvToJSON(res as ClarityValue);
+            if ((json as any).type === 'some') {
+              const v = (json as any).value.value;
+              out.push({
+                sender: v.tipper.value,
+                timestamp: 0 // Contract doesn't store timestamp
+              });
+            }
+          } catch { }
+        }
+        setRecentTips(out.reverse());
+        setRecentCount(out.length);
+      }
     })()
   }, [contractAddress, contractName]);
 
