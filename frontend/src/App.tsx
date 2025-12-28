@@ -45,11 +45,11 @@ function shortAddr(addr: string, left = 6, right = 6) {
   return `${addr.slice(0, left)}…${addr.slice(-right)}`;
 }
 
-type RecentTip = { 
-  index?: number; 
-  tipper: string; 
-  amountMicro: string; 
-  timeIso?: string; 
+type RecentTip = {
+  index?: number;
+  tipper: string;
+  amountMicro: string;
+  timeIso?: string;
   txid?: string;
   timeMs?: number;
 };
@@ -110,14 +110,14 @@ export default function App() {
 
   const fetchRecentViaApi = useCallback(async () => {
     const base = 'https://api.hiro.so';
-    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=200`;
+    const url = `${base}/extended/v1/address/${contractAddress}.${contractName}/transactions?limit=50`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`API ${r.status}`);
     const data = await r.json();
     const items = (data.results || [])
-      .filter((tx: any) => 
-        tx.tx_type === 'contract_call' && 
-        tx.tx_status === 'success' && 
+      .filter((tx: any) =>
+        tx.tx_type === 'contract_call' &&
+        tx.tx_status === 'success' &&
         tx.contract_call?.function_name === 'tip'
       )
       .map((tx: any) => {
@@ -125,15 +125,14 @@ export default function App() {
         const repr: string = arg?.repr || 'u0';
         const amountMicro = repr.startsWith('u') ? repr.slice(1) : repr;
 
-        // Fixed: proper null coalescing
-        const seconds = 
+        const seconds =
           (typeof tx.receipt_time === 'number' ? tx.receipt_time : null) ??
           (typeof tx.block_time === 'number' ? tx.block_time : null) ??
           (typeof tx.burn_block_time === 'number' ? tx.burn_block_time : null) ??
           0;
 
-        const timeMs = seconds * 1000;
-        
+        const timeMs = seconds ? seconds * 1000 : Date.now();
+
         return {
           tipper: tx.sender_address as string,
           amountMicro,
@@ -142,14 +141,16 @@ export default function App() {
           timeMs,
         } as RecentTip;
       });
-    items.sort((a: any, b: any) => {
-      const aTime = a.timeMs || new Date(a.timeIso || 0).getTime();
-      const bTime = b.timeMs || new Date(b.timeIso || 0).getTime();
-      return bTime - aTime;
-    });
-    // setRecent(items.slice(items));
-    if (items.length ===0) {
-      throw new Error('no recent item')
+
+    items.sort((a: any, b: any) => b.timeMs - a.timeMs);
+
+    // If API returns empty, we don't throw, just set empty. 
+    // If the user wants fallback to contract, we could throw, but API is usually source of truth for history.
+    // However, to be safe and allow fallback if API finds nothing (e.g. indexing delay), we can check:
+    if (items.length === 0) {
+      // Optional: throw to trigger fallback if we really trust contract more for "latest"
+      // But usually API is better. Let's stick to API if it returns success.
+      // throw new Error('no recent item'); 
     }
     setRecent(items);
   }, [contractAddress, contractName]);
@@ -174,10 +175,10 @@ export default function App() {
       const json = cvToJSON(res as ClarityValue);
       if ((json as any).type === 'some') {
         const v = (json as any).value.value;
-        out.push({ 
-          index: i, 
-          tipper: v.tipper.value, 
-          amountMicro: v.amount.value 
+        out.push({
+          index: i,
+          tipper: v.tipper.value,
+          amountMicro: v.amount.value
         });
       }
     }
@@ -207,7 +208,7 @@ export default function App() {
     }
     return buckets;
   }, [recent]);
-  
+
   const tipsDaily14 = useMemo(() => {
     const dayMs = 24 * 3600_000;
     const endOfToday = new Date(); endOfToday.setHours(24, 0, 0, 0);
@@ -225,7 +226,7 @@ export default function App() {
         if (ts >= start && ts < end) { stx += toStx(t.amountMicro); count++; }
       }
       const d = new Date(start + 12 * 3600_000);
-      const label = `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+      const label = `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
       buckets.push({ label, stx: Number(stx.toFixed(6)), count });
     }
     return buckets;
@@ -268,7 +269,7 @@ export default function App() {
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-      
+
       <div style={{
         minHeight: '100vh',
         color: '#e5e7eb',
@@ -309,14 +310,14 @@ export default function App() {
               <div className="emoji-badge">🔗</div>
               <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 12px' }}>WalletConnect</h3>
               <p className="subtitle">
-                This opens WalletConnect for mobile wallet pairing. 
+                This opens WalletConnect for mobile wallet pairing.
                 In production, this uses Reown AppKit.
               </p>
               <div className="card" style={{ marginBottom: '20px' }}>
                 <div className="label">Project ID</div>
                 <code style={{ fontSize: '11px', wordBreak: 'break-all' }}>{WALLETCONNECT_PROJECT_ID}</code>
               </div>
-              <button 
+              <button
                 onClick={closeWalletConnectModal}
                 className="btn btn-primary btn-glow"
                 style={{ width: '100%' }}
@@ -365,12 +366,12 @@ export default function App() {
                 Support the creator by sending STX. Tips go directly to the contract creator address.
                 Connect a Stacks wallet via WalletConnect and send any amount ≥ 0.1 STX.
               </p>
-              
+
               <div className="grid">
                 <div className="card">
                   <h3>Contract</h3>
                   <div className="label">Identifier</div>
-                  <div style={{wordBreak: 'break-all', fontSize: '13px', marginTop: '8px'}}>
+                  <div style={{ wordBreak: 'break-all', fontSize: '13px', marginTop: '8px' }}>
                     <code>{CONTRACT_ID}</code>
                   </div>
                 </div>
@@ -413,11 +414,11 @@ export default function App() {
                 style={{ marginTop: '8px' }}
               />
               <div className="actions" style={{ marginTop: '12px' }}>
-                <button 
-                  className="btn btn-primary btn-glow" 
-                  onClick={tip} 
+                <button
+                  className="btn btn-primary btn-glow"
+                  onClick={tip}
                   disabled={loading || !connected}
-                  style={{ 
+                  style={{
                     opacity: (loading || !connected) ? 0.5 : 1,
                     cursor: (loading || !connected) ? 'not-allowed' : 'pointer'
                   }}
@@ -464,7 +465,7 @@ export default function App() {
                             <span>{new Date(r.timeMs).toLocaleString()}</span>
                           ) : r.timeIso && (
                             <span>{new Date(r.timeIso).toLocaleString()}</span>
-                          )} 
+                          )}
                           {r.txid && (
                             <a
                               className="tip-link"
@@ -484,48 +485,48 @@ export default function App() {
             </div>
           </section>
           <section style={{ marginTop: '24px' }}>
-  <div className="card">
-    <h3>Tip activity (last 24h)</h3>
-    <div style={{ width: '100%', height: 260 }}>
-      <ResponsiveContainer>
-        <AreaChart data={tipsHourly24} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorStx" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#39FF14" stopOpacity={0.6}/>
-              <stop offset="95%" stopColor="#00FFA3" stopOpacity={0.05}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
-          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-          <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
-          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
-          <Legend />
-          <Area type="monotone" dataKey="stx" name="STX" stroke="#39FF14" fillOpacity={1} fill="url(#colorStx)" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-</section>
+            <div className="card">
+              <h3>Tip activity (last 24h)</h3>
+              <div style={{ width: '100%', height: 260 }}>
+                <ResponsiveContainer>
+                  <AreaChart data={tipsHourly24} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorStx" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#39FF14" stopOpacity={0.6} />
+                        <stop offset="95%" stopColor="#00FFA3" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+                    <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+                    <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+                    <Legend />
+                    <Area type="monotone" dataKey="stx" name="STX" stroke="#39FF14" fillOpacity={1} fill="url(#colorStx)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </section>
 
-<section style={{ marginTop: '16px' }}>
-  <div className="card">
-    <h3>Daily tips (last 14d)</h3>
-    <div style={{ width: '100%', height: 260 }}>
-      <ResponsiveContainer>
-        <BarChart data={tipsDaily14} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
-          <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
-          <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-          <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
-          <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fontSize: 11 }} width={40} />
-          <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
-          <Legend />
-          <Bar yAxisId="left" dataKey="stx" name="STX" fill="#00FFA3" />
-          <Bar yAxisId="right" dataKey="count" name="# tips" fill="#39FF14" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-</section>
+          <section style={{ marginTop: '16px' }}>
+            <div className="card">
+              <h3>Daily tips (last 14d)</h3>
+              <div style={{ width: '100%', height: 260 }}>
+                <ResponsiveContainer>
+                  <BarChart data={tipsDaily14} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+                    <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fontSize: 11 }} width={60} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fontSize: 11 }} width={40} />
+                    <Tooltip contentStyle={{ background: 'rgba(20,24,40,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10 }} />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="stx" name="STX" fill="#00FFA3" />
+                    <Bar yAxisId="right" dataKey="count" name="# tips" fill="#39FF14" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </section>
 
           <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
         </div>
