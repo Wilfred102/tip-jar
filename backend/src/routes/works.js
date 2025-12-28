@@ -8,7 +8,7 @@ const router = Router();
 // Create a work (file upload)
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const { creatorId, title, description, coverUrl } = req.body;
+    const { creatorId, title, description, coverUrl, workUrl } = req.body;
     if (!creatorId || !title) return res.status(400).json({ error: 'creatorId and title required' });
     const creator = await Creator.findById(creatorId);
     if (!creator) return res.status(404).json({ error: 'creator not found' });
@@ -24,7 +24,8 @@ router.post('/', upload.single('file'), async (req, res) => {
       description,
       fileUrl,
       fileType,
-      coverUrl
+      coverUrl,
+      workUrl
     });
 
     res.status(201).json(doc);
