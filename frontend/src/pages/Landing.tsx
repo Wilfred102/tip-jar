@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CONTRACT_ID } from '../config';
+import { CONTRACT_ID, BACKEND_API_URL } from '../config';
 import { StacksMainnet } from '@stacks/network';
 import { callReadOnlyFunction, ClarityValue, cvToJSON, uintCV } from '@stacks/transactions';
 
@@ -10,8 +10,8 @@ function splitContractId(id: string) {
   return { contractAddress, contractName }
 }
 
-function microToStxDisplay(micro: string | bigint): string {
-  const m = typeof micro === 'string' ? BigInt(micro.replace(/^u/, '')) : micro;
+function microToStxDisplay(micro: string | bigint | number): string {
+  const m = typeof micro === 'string' ? BigInt(micro.replace(/^u/, '')) : BigInt(micro);
   const whole = m / 1_000_000n;
   const frac = m % 1_000_000n;
   const fracStr = frac.toString().padStart(6, '0').replace(/0+$/, '');
@@ -45,6 +45,8 @@ export default function Landing() {
   const [recentTips, setRecentTips] = useState<{ sender: string; timestamp: number }[]>([]);
   const [totalTip, setTotalTips] = useState<string>('0');
   const [recentCount, setRecentCount] = useState<number>(0);
+  const [topCreators, setTopCreators] = useState<any[]>([]);
+  const [stats, setStats] = useState({ highest: 0n, uniqueTippers: 0, avg: 0n });
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
 
@@ -156,6 +158,56 @@ export default function Landing() {
       }
     })()
   }, [contractAddress, contractName]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_API_URL}/api/tips`);
+        if (!res.ok) return;
+        const tips = await res.json();
+
+        // Aggregate by creator
+        const creatorMap = new Map();
+        const tippers = new Set();
+        let maxTip = 0n;
+        let totalSum = 0n;
+
+        for (const t of tips) {
+          const amt = BigInt(t.amountMicro);
+          if (amt > maxTip) maxTip = amt;
+          totalSum += amt;
+          tippers.add(t.senderAddress);
+
+          // Handle populated creator object or ID
+          const cId = t.creator?._id || t.creator || 'unknown';
+          const cName = t.creator?.name;
+          const cAddr = t.creator?.walletAddress;
+
+          if (cName) { // Only count if we have a name (valid creator)
+            if (!creatorMap.has(cId)) {
+              creatorMap.set(cId, { name: cName, address: cAddr, total: 0n });
+            }
+            const c = creatorMap.get(cId);
+            c.total += amt;
+          }
+        }
+
+        const sortedCreators = Array.from(creatorMap.values())
+          .sort((a, b) => (b.total > a.total ? 1 : -1))
+          .slice(0, 3);
+
+        setTopCreators(sortedCreators);
+        setStats({
+          highest: maxTip,
+          uniqueTippers: tippers.size,
+          avg: tips.length ? totalSum / BigInt(tips.length) : 0n
+        });
+
+      } catch (e) {
+        console.error('Backend fetch failed', e);
+      }
+    })()
+  }, []);
 
   return (
     <div className="container">
@@ -285,6 +337,38 @@ export default function Landing() {
             ) : (
               <div className="value" style={{ fontSize: 18 }}>—</div>
             )}
+          </div>
+        </div>
+        <div className="card">
+          <h3>Top Creators</h3>
+          <div className="label">Most supported (last 200 tips)</div>
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {topCreators.length > 0 ? (
+              topCreators.map((c, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 'bold' }}>#{i + 1}</span>
+                    <span>{c.name || shortAddr(c.address)}</span>
+                  </div>
+                  <span style={{ fontWeight: 'bold' }}>{microToStxDisplay(c.total)} STX</span>
+                </div>
+              ))
+            ) : (
+              <div className="value" style={{ fontSize: 18 }}>—</div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Highest Tip</div>
+                <div style={{ fontSize: 16, fontWeight: 'bold' }}>{stats.highest ? microToStxDisplay(stats.highest) : '0'} STX</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Unique Tippers</div>
+                <div style={{ fontSize: 16, fontWeight: 'bold' }}>{stats.uniqueTippers}</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
