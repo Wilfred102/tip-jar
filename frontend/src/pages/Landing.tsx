@@ -47,6 +47,7 @@ export default function Landing() {
   const [recentCount, setRecentCount] = useState<number>(0);
   const [topCreators, setTopCreators] = useState<any[]>([]);
   const [stats, setStats] = useState({ highest: 0n, uniqueTippers: 0, avg: 0n });
+  const [works, setWorks] = useState<any[]>([]);
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
 
@@ -376,6 +377,107 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <div className="card">
+          <h3>Recent Works</h3>
+          <div className="label">Latest uploads from creators</div>
+          
+          {works.length === 0 && (
+            <div className="subtitle" style={{ marginTop: 16 }}>No works yet. Be the first to upload!</div>
+          )}
+          
+          {works.length > 0 && (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              gap: '16px',
+              marginTop: '16px'
+            }}>
+              {works.map((work) => (
+                <div 
+                  key={work._id} 
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.02)'
+                  }}
+                >
+                  {work.coverUrl && (
+                    <img 
+                      src={work.coverUrl} 
+                      alt={work.title}
+                      style={{
+                        width: '100%',
+                        height: '160px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        marginBottom: '8px'
+                      }}
+                    />
+                  )}
+                  {!work.coverUrl && work.fileType?.startsWith('image/') && (
+                    <img 
+                      src={`${BACKEND_API_URL}${work.fileUrl}`} 
+                      alt={work.title}
+                      style={{
+                        width: '100%',
+                        height: '160px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        marginBottom: '8px'
+                      }}
+                    />
+                  )}
+                  <h4 style={{ margin: '8px 0', fontSize: '1rem' }}>{work.title}</h4>
+                  <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: '8px' }}>
+                    by {work.creator?.name || 'Unknown'}
+                  </div>
+                  {work.description && (
+                    <p style={{ 
+                      fontSize: '0.875rem', 
+                      color: '#aaa', 
+                      marginBottom: '12px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                      {work.description}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Link 
+                      to="/app" 
+                      className="btn btn-primary" 
+                      style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
+                    >
+                      Tip
+                    </Link>
+                    <Link 
+                      to="/works" 
+                      className="btn btn-secondary"
+                      style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
+                    >
+                      Preview
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {works.length > 0 && (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <Link to="/works" className="btn btn-secondary">
+                View all works
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
