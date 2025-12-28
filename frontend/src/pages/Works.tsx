@@ -39,6 +39,25 @@ export default function Works() {
     }
   }
 
+  async function deleteWork(workId: string, title: string) {
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const r = await fetch(`${BACKEND_API_URL}/api/works/${workId}`, {
+        method: 'DELETE',
+      });
+      if (!r.ok) throw new Error('Failed to delete work');
+
+      // Refresh the works list
+      await loadWorks();
+    } catch (e: any) {
+      alert('Error deleting work: ' + (e.message || 'Unknown error'));
+      console.error('Delete work error:', e);
+    }
+  }
+
   useEffect(() => { loadWorks(); }, [params]);
 
   function renderMedia(w: Work) {
@@ -111,6 +130,13 @@ export default function Works() {
             <div className="actions" style={{ marginTop: 10 }}>
               <Link className="btn btn-primary" to="/app">Tip this creator</Link>
               <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More from creator</button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => deleteWork(w._id, w.title)}
+                style={{ backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}
