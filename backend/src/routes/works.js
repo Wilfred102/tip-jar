@@ -49,4 +49,31 @@ router.get('/:id', async (req, res) => {
   res.json(doc);
 });
 
+// Delete a work
+router.delete('/:id', async (req, res) => {
+  try {
+    const doc = await Work.findById(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'not found' });
+
+    // Delete the file from disk
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const filePath = path.join(process.cwd(), 'uploads', path.basename(doc.fileUrl));
+
+    try {
+      await fs.unlink(filePath);
+    } catch (fileErr) {
+      console.warn('Failed to delete file:', fileErr);
+      // Continue with database deletion even if file deletion fails
+    }
+
+    // Delete from database
+    await Work.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Work deleted successfully' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

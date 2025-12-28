@@ -10,6 +10,7 @@ type Work = {
   fileUrl: string;
   fileType: string;
   coverUrl?: string;
+  workUrl?: string;
   creator: Creator;
 };
 
@@ -35,6 +36,25 @@ export default function Works() {
       setWorks(j || []);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deleteWork(workId: string, title: string) {
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const r = await fetch(`${BACKEND_API_URL}/api/works/${workId}`, {
+        method: 'DELETE',
+      });
+      if (!r.ok) throw new Error('Failed to delete work');
+
+      // Refresh the works list
+      await loadWorks();
+    } catch (e: any) {
+      alert('Error deleting work: ' + (e.message || 'Unknown error'));
+      console.error('Delete work error:', e);
     }
   }
 
@@ -94,9 +114,29 @@ export default function Works() {
             </div>
             <div style={{ marginBottom: 8 }}>{renderMedia(w)}</div>
             {w.description && <p className="subtitle" style={{ marginTop: 8 }}>{w.description}</p>}
+            {w.workUrl && (
+              <div style={{ marginTop: 8 }}>
+                <a
+                  href={w.workUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tip-link"
+                  style={{ fontSize: '0.875rem' }}
+                >
+                  🔗 View external link
+                </a>
+              </div>
+            )}
             <div className="actions" style={{ marginTop: 10 }}>
               <Link className="btn btn-primary" to="/app">Tip this creator</Link>
               <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More from creator</button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => deleteWork(w._id, w.title)}
+                style={{ backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}

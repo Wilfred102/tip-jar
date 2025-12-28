@@ -63,7 +63,8 @@ export default function Creators() {
 
   async function uploadWork(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     setLoading(true);
     setError('');
     try {
@@ -72,7 +73,7 @@ export default function Creators() {
         body: fd,
       });
       if (!r.ok) throw new Error('Failed to upload work');
-      (e.currentTarget as HTMLFormElement).reset();
+      form.reset();
       navigate('/works');
     } catch (e: any) {
       setError(e.message || 'Failed to upload work');
@@ -114,33 +115,33 @@ export default function Creators() {
           <form onSubmit={createCreator}>
             <div className="label">Name</div>
             <input name="name" className="input" required />
-            
+
             <div className="label" style={{ marginTop: 8 }}>Wallet address (STX)</div>
-            <input 
-              name="walletAddress" 
-              className="input" 
-              required 
+            <input
+              name="walletAddress"
+              className="input"
+              required
               placeholder="SP..."
               pattern="^(SP|ST)[0-9A-Z]+"
               title="Must be a valid Stacks address starting with SP or ST"
             />
-            
+
             <div className="label" style={{ marginTop: 8 }}>Avatar URL (optional)</div>
-            <input 
-              name="avatarUrl" 
-              className="input" 
+            <input
+              name="avatarUrl"
+              className="input"
               type="url"
               placeholder="https://..."
             />
-            
+
             <div className="label" style={{ marginTop: 8 }}>Bio (optional)</div>
-            <textarea 
-              name="bio" 
-              className="input" 
+            <textarea
+              name="bio"
+              className="input"
               rows={3}
               placeholder="Tell us about yourself..."
             />
-            
+
             <div className="actions" style={{ marginTop: 12 }}>
               <button className="btn btn-primary" disabled={loading}>
                 {loading ? 'Saving…' : 'Create'}
@@ -159,46 +160,54 @@ export default function Creators() {
                 <option key={c._id} value={c._id}>{c.name}</option>
               ))}
             </select>
-            
+
             <div className="label" style={{ marginTop: 8 }}>Title</div>
-            <input 
-              name="title" 
-              className="input" 
-              required 
+            <input
+              name="title"
+              className="input"
+              required
               placeholder="My awesome work"
             />
-            
+
             <div className="label" style={{ marginTop: 8 }}>Description</div>
-            <textarea 
-              name="description" 
-              className="input" 
+            <textarea
+              name="description"
+              className="input"
               rows={3}
               placeholder="Describe your work..."
             />
-            
+
             <div className="label" style={{ marginTop: 8 }}>Cover URL (optional)</div>
-            <input 
-              name="coverUrl" 
-              className="input" 
+            <input
+              name="coverUrl"
+              className="input"
               type="url"
               placeholder="https://..."
             />
-            
+
+            <div className="label" style={{ marginTop: 8 }}>Work URL (optional)</div>
+            <input
+              name="workUrl"
+              className="input"
+              type="url"
+              placeholder="https://... (external link to your work)"
+            />
+
             <div className="label" style={{ marginTop: 8 }}>File</div>
-            <input 
-              name="file" 
-              className="input" 
-              type="file" 
-              required 
+            <input
+              name="file"
+              className="input"
+              type="file"
+              required
               accept="audio/*,video/*,image/*,.pdf"
             />
-            
+
             <div className="actions" style={{ marginTop: 12 }}>
               <button className="btn btn-primary" disabled={loading || creators.length === 0}>
                 {loading ? 'Uploading…' : 'Upload'}
               </button>
             </div>
-            
+
             {creators.length === 0 && (
               <div style={{ marginTop: 8, fontSize: '0.875rem', color: '#666' }}>
                 Please create a creator first before uploading works
@@ -219,17 +228,17 @@ export default function Creators() {
           {creators.length > 0 && (
             <ul className="list">
               {creators.map(c => (
-                <li key={c._id} style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <li key={c._id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '12px 0',
                   borderBottom: '1px solid #eee'
                 }}>
                   <div style={{ flex: 1 }}>
                     {c.avatarUrl && (
-                      <img 
-                        src={c.avatarUrl} 
+                      <img
+                        src={c.avatarUrl}
                         alt={c.name}
                         style={{
                           width: 40,
@@ -242,10 +251,10 @@ export default function Creators() {
                       />
                     )}
                     <code>
-                      <Link 
-                        to={`/creators/${c._id}`} 
-                        style={{ 
-                          color: 'inherit', 
+                      <Link
+                        to={`/creators/${c._id}`}
+                        style={{
+                          color: 'inherit',
                           textDecoration: 'none',
                           fontWeight: 600
                         }}
@@ -258,9 +267,9 @@ export default function Creators() {
                       {c.walletAddress}
                     </span>
                     {c.bio && (
-                      <div style={{ 
-                        fontSize: '0.875rem', 
-                        color: '#666', 
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: '#666',
                         marginTop: 4,
                         marginLeft: c.avatarUrl ? 52 : 0
                       }}>
@@ -268,11 +277,11 @@ export default function Creators() {
                       </div>
                     )}
                   </div>
-                  <Link 
-                    to={`/creators/${c._id}`} 
-                    className="btn btn-secondary" 
-                    style={{ 
-                      marginLeft: 12, 
+                  <Link
+                    to={`/creators/${c._id}`}
+                    className="btn btn-secondary"
+                    style={{
+                      marginLeft: 12,
                       padding: '6px 12px',
                       fontSize: '0.875rem',
                       whiteSpace: 'nowrap'
