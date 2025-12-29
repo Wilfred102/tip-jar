@@ -222,7 +222,7 @@ export default function Creators() {
           <h3>Existing creators</h3>
           {creators.length === 0 && (
             <div className="subtitle">
-              No creators yet. Create one using the form above!
+              No creators yet. Be the first to create an account
             </div>
           )}
           {creators.length > 0 && (
