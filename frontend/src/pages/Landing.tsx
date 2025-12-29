@@ -276,7 +276,7 @@ export default function Landing() {
           <div className="emoji-badge">🎨</div>
           <h3>Visual artists</h3>
           <p className="subtitle">Illustrators, painters, street artists, 3D and generative creators — no middlemen.</p>
-          <Link to="/app" className="btn btn-secondary">Tip an artist</Link>
+          <Link to="/app" className="btn btn-secondary">Tip your favorite artist</Link>
         </div>
       </section>
 
