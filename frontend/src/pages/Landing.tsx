@@ -237,7 +237,7 @@ export default function Landing() {
         <div className="aurora aurora-3" aria-hidden="true" />
 
         <div className="hero-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="kicker">A home for music & art</div>
+          <div className="kicker">A home for the best creators</div>
           <h1 className="title gradient-text">Fuel the creators who move you</h1>
           <p className="subtitle">
             Tip musicians, visual artists, filmmakers, designers, streamers and more — directly on
