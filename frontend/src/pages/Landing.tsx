@@ -269,7 +269,7 @@ export default function Landing() {
         <div className="spotlight-card">
           <div className="emoji-badge">🎵</div>
           <h3>Music makers</h3>
-          <p className="subtitle">Producers, vocalists, DJs and sound designers receiving direct, on-chain support.</p>
+          <p className="subtitle">Producers, vocalists, Recording Artists and sound designers receiving direct, on-chain support.</p>
           <Link to="/app" className="btn btn-secondary">Tip a musician</Link>
         </div>
         <div className="spotlight-card">
