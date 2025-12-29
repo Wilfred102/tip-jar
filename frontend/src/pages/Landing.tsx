@@ -482,7 +482,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
+      <footer className="footer">Built with Stacks</footer>
     </div>
   );
 }
