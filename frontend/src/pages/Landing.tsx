@@ -240,7 +240,7 @@ export default function Landing() {
           <div className="kicker">A home for the best creators</div>
           <h1 className="title gradient-text">Fuel the creators who move you</h1>
           <p className="subtitle">
-            Tip musicians, visual artists, filmmakers, designers, streamers and more creators — directly on
+            Tip musicians, visual artists, filmmakers, designers, streamers, writers and more creators — directly on
             Stacks mainnet. Transparent, non-custodial, and instant. Your support, their freedom.
           </p>
           <div className="actions">
