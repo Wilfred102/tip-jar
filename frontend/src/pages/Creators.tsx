@@ -174,7 +174,7 @@ export default function Creators() {
               name="description"
               className="input"
               rows={3}
-              placeholder="Describe your work..."
+              placeholder="Brief Description of your work..."
             />
 
             <div className="label" style={{ marginTop: 8 }}>Cover URL (optional)</div>
