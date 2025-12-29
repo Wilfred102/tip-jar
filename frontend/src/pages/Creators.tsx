@@ -185,7 +185,7 @@ export default function Creators() {
               placeholder="https://..."
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Work URL (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Add Work URL (optional)</div>
             <input
               name="workUrl"
               className="input"
