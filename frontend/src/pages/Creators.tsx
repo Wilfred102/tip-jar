@@ -151,7 +151,7 @@ export default function Creators() {
         </div>
 
         <div className="hero-card">
-          <h3 style={{ marginTop: 0 }}>Upload a work</h3>
+          <h3 style={{ marginTop: 0 }}>Upload your work</h3>
           <form onSubmit={uploadWork} encType="multipart/form-data">
             <div className="label">Creator</div>
             <select name="creatorId" className="input" required defaultValue="">
