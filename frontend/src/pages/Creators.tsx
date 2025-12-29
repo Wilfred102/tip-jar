@@ -169,7 +169,7 @@ export default function Creators() {
               placeholder="My awesome work"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Description</div>
+            <div className="label" style={{ marginTop: 8 }}>Work Description</div>
             <textarea
               name="description"
               className="input"
