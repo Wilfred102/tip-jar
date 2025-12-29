@@ -384,7 +384,7 @@ export default function Landing() {
       <section style={{ marginTop: 24 }}>
         <div className="card">
           <h3>Recent Works</h3>
-          <div className="label">Latest uploads from creators</div>
+          <div className="label">Latest uploads from you favorite creators</div>
           
           {works.length === 0 && (
             <div className="subtitle" style={{ marginTop: 16 }}>No works yet. Be the first to upload!</div>
