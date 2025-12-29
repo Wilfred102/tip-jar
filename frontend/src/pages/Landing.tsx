@@ -311,7 +311,7 @@ export default function Landing() {
         <div className="card">
           <h3>Get started</h3>
           <p className="subtitle">Connect your wallet on the next page, set an amount and confirm the transaction.</p>
-          <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
+          <Link to="/app" className="btn btn-primary btn-glow">Get started</Link>
         </div>
       </section>
 
