@@ -220,7 +220,7 @@ export default function Works() {
         ))}
       </section>
 
-      <footer className="footer">Powered by your Express + MongoDB backend</footer>
+      <footer className="footer">Built on Stacks</footer>
     </div>
   );
 }
