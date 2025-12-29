@@ -111,7 +111,7 @@ export default function Creators() {
 
       <section className="hero" style={{ gap: 16 }}>
         <div className="hero-card">
-          <h3 style={{ marginTop: 0 }}>Create creator</h3>
+          <h3 style={{ marginTop: 0 }}>Create An Account</h3>
           <form onSubmit={createCreator}>
             <div className="label">Name</div>
             <input name="name" className="input" required />
