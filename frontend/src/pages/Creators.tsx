@@ -116,7 +116,7 @@ export default function Creators() {
             <div className="label">Name</div>
             <input name="name" className="input" required />
 
-            <div className="label" style={{ marginTop: 8 }}>Wallet address (STX)</div>
+            <div className="label" style={{ marginTop: 8 }}>Creator Wallet address (STX)</div>
             <input
               name="walletAddress"
               className="input"
