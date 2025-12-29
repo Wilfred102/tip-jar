@@ -134,12 +134,12 @@ export default function Creators() {
               placeholder="https://..."
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Bio (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Creator Bio (optional)</div>
             <textarea
               name="bio"
               className="input"
               rows={3}
-              placeholder="Tell us about yourself..."
+              placeholder="Tell us about yourself and craft..."
             />
 
             <div className="actions" style={{ marginTop: 12 }}>
