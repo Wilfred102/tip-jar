@@ -301,7 +301,7 @@ export default function Landing() {
 
       <section className="grid" style={{ marginTop: 16 }}>
         <div className="card">
-          <h3>Features</h3>
+          <h3>Added Features</h3>
           <ul className="list">
             <li><strong>Read-only stats</strong> show total tips and latest tippers.</li>
             <li><strong>Minimum tip</strong> enforced to prevent dust spam.</li>
