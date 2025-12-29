@@ -292,7 +292,7 @@ export default function Landing() {
         <div className="card">
           <h3>Why creators love it</h3>
           <ul className="list">
-            <li>👐 <strong>No custody</strong>: funds go from your wallet directly to the creator.</li>
+            <li>👐 <strong>No custody</strong>: funds go from your wallet directly to the creator no middleman.</li>
             <li>🧩 <strong>Composable</strong>: easy to embed in bios, link-in-bio, websites, streams.</li>
             <li>🛡️ <strong>Open-source</strong> Clarity you can audit.</li>
           </ul>
