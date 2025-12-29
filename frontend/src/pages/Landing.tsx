@@ -473,9 +473,9 @@ export default function Landing() {
           )}
           
           {works.length > 0 && (
-            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+            <div style={{ marginTop: '25px', textAlign: 'center' }}>
               <Link to="/works" className="btn btn-secondary">
-                View all works
+                View all works from creators
               </Link>
             </div>
           )}
