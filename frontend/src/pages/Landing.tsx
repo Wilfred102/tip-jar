@@ -226,7 +226,7 @@ export default function Landing() {
         </div>
         <div className="actions">
           <Link to="/creators" className="btn btn-secondary">For creators</Link>
-          <Link to="/app" className="btn btn-primary">Enter App</Link>
+          <Link to="/app" className="btn btn-primary">Get Started</Link>
         </div>
       </header>
 
