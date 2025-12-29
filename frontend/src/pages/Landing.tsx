@@ -253,7 +253,7 @@ export default function Landing() {
           {/* Creative tag marquee */}
           <div className="marquee" style={{ marginTop: 20 }}>
             <div className="marquee-track">
-              {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
+              {['beats', 'visual art', 'live coding', 'articles', 'podcasts', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
                 <span key={tag} className="marquee-item pill">{tag}</span>
               ))}
               {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
