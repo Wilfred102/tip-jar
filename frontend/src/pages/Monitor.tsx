@@ -138,7 +138,7 @@ export default function Monitor() {
           </div>
           
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600">Peak Error Count</h3>
+            <h3 className="text-sm font-medium text-gray-600">Peak Error Count - Data flow</h3>
             <p className="text-3xl font-bold text-orange-600 mt-2">{maxCount}</p>
           </div>
         </div>
