@@ -126,7 +126,7 @@ export default function Creators() {
               title="Must be a valid Stacks address starting with SP or ST"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Avatar URL (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Avatar URL -  (optional)</div>
             <input
               name="avatarUrl"
               className="input"
