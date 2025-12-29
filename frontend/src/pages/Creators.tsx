@@ -193,7 +193,7 @@ export default function Creators() {
               placeholder="https://... (external link to your work)"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>File</div>
+            <div className="label" style={{ marginTop: 8 }}>Click to Upload File</div>
             <input
               name="file"
               className="input"
