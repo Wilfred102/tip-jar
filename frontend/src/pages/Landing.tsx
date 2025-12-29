@@ -306,6 +306,8 @@ export default function Landing() {
             <li><strong>Updated stats</strong> show total tips and latest tippers.</li>
             <li><strong>Minimum tip</strong> enforced to prevent dust spam.</li>
             <li><strong>Explorer links</strong> for full transparency and openness.</li>
+            <li><strong>Creator Profile</strong> dedicated page for creators.</li>
+
           </ul>
         </div>
         <div className="card">
