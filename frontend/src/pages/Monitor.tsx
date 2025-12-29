@@ -116,7 +116,7 @@ export default function Monitor() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-red-900">Error Loading Data</h3>
+                <h3 className="font-semibold text-red-900">Error Loading Realtime Data</h3>
                 <p className="text-red-700 mt-1">{error}</p>
               </div>
             </div>
