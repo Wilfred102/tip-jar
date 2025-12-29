@@ -210,7 +210,7 @@ export default function Creators() {
 
             {creators.length === 0 && (
               <div style={{ marginTop: 8, fontSize: '0.875rem', color: '#666' }}>
-                Please create a creator first before uploading works
+                Make sure to create a creator first before uploading works
               </div>
             )}
           </form>
