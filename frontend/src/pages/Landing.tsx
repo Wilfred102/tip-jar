@@ -225,7 +225,7 @@ export default function Landing() {
           <div>Tip Jar</div>
         </div>
         <div className="actions">
-          <Link to="/creators" className="btn btn-secondary">For creators</Link>
+          <Link to="/creators" className="btn btn-secondary">creators</Link>
           <Link to="/app" className="btn btn-primary">Get Started</Link>
         </div>
       </header>
