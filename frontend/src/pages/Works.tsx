@@ -170,7 +170,7 @@ export default function Works() {
 
       <section className="hero">
         <div className="hero-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="kicker">Discover</div>
+          <div className="kicker">Discover Creators</div>
           <h1 className="title">Support creators</h1>
           <p className="subtitle">Browse recent uploads and tip creators directly on Stacks mainnet.</p>
         </div>
