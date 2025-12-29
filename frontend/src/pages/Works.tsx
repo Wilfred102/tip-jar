@@ -207,7 +207,7 @@ export default function Works() {
             )}
             <div className="actions" style={{ marginTop: 10 }}>
               <Link className="btn btn-primary" to="/app">Tip this creator</Link>
-              <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More from creator</button>
+              <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More work from creator</button>
               <button
                 className="btn btn-secondary"
                 onClick={() => deleteWork(w._id, w.title)}
