@@ -92,7 +92,7 @@ export default function Works() {
       <header className="nav">
         <div className="logo">
           <div className="logo-badge">🖼️</div>
-          <div>Works</div>
+          <div>Creators Works</div>
         </div>
         <div className="actions">
           <Link to="/" className="btn btn-secondary">Home</Link>
