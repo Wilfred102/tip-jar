@@ -284,7 +284,7 @@ export default function Landing() {
         <div className="card">
           <h3>How it works</h3>
           <ul className="list">
-            <li>🔐 <strong>Smart contract</strong> holds logic: minimum tip, tracking and routing.</li>
+            <li>🔐 <strong>COntract</strong> holds logic: minimum tip, tracking and routing.</li>
             <li>🔗 <strong>WalletConnect</strong> lets you approve tips from wallets like Xverse and other wallets.</li>
             <li>🔎 <strong>Transparent</strong>: tips are settled on-chain, viewable on the explorer.</li>
           </ul>
