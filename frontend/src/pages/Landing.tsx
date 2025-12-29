@@ -222,7 +222,7 @@ export default function Landing() {
       <header className="nav">
         <div className="logo">
           <div className="logo-badge">💧</div>
-          <div>STX Tip Jar</div>
+          <div>Tip Jar</div>
         </div>
         <div className="actions">
           <Link to="/creators" className="btn btn-secondary">For creators</Link>
