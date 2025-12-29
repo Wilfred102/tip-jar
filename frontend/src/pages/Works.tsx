@@ -201,7 +201,7 @@ export default function Works() {
                   className="tip-link"
                   style={{ fontSize: '0.875rem' }}
                 >
-                  🔗 View external link
+                  🔗 View work link
                 </a>
               </div>
             )}
