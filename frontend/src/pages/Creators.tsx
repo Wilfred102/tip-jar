@@ -155,7 +155,7 @@ export default function Creators() {
           <form onSubmit={uploadWork} encType="multipart/form-data">
             <div className="label">Creator</div>
             <select name="creatorId" className="input" required defaultValue="">
-              <option value="" disabled>Select creator</option>
+              <option value="" disabled>Select Creator Account</option>
               {creators.map(c => (
                 <option key={c._id} value={c._id}>{c.name}</option>
               ))}
