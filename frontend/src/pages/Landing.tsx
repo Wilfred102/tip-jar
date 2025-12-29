@@ -244,7 +244,7 @@ export default function Landing() {
             Stacks mainnet. Transparent, non-custodial, and instant. Your support, their freedom.
           </p>
           <div className="actions">
-            <Link to="/app" className="btn btn-primary btn-glow">Start tipping</Link>
+            <Link to="/app" className="btn btn-primary btn-glow">Start tipping creators</Link>
             <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Learn about Stacks</a>
             <a className="btn btn-secondary" href="/works" target="_blank" rel="noreferrer">Browse works</a>
 
