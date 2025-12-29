@@ -305,7 +305,7 @@ export default function Landing() {
           <ul className="list">
             <li><strong>Read-only stats</strong> show total tips and latest tippers.</li>
             <li><strong>Minimum tip</strong> enforced to prevent dust spam.</li>
-            <li><strong>Explorer links</strong> for full transparency.</li>
+            <li><strong>Explorer links</strong> for full transparency and openness.</li>
           </ul>
         </div>
         <div className="card">
