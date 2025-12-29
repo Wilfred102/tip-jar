@@ -297,7 +297,7 @@ export default function Creators() {
       </section>
 
       <footer className="footer">
-       Make sure to Upload works and get tipped on Stacks
+       Make sure to create a creator account first before uploading works and get tipped on Stacks
       </footer>
     </div>
   );
