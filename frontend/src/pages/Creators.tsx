@@ -161,7 +161,7 @@ export default function Creators() {
               ))}
             </select>
 
-            <div className="label" style={{ marginTop: 8 }}>Title</div>
+            <div className="label" style={{ marginTop: 8 }}>Work Title</div>
             <input
               name="title"
               className="input"
