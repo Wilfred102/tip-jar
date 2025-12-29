@@ -73,7 +73,7 @@ export default function Monitor() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Error Monitor</h1>
               <p className="text-gray-600 mt-1">
-                Real-time error tracking and analytics
+                Real-time error tracking and analytics - data
               </p>
             </div>
             
