@@ -29,6 +29,16 @@ type Tip = {
   senderAddress: string;
   txId: string;
   chain?: string;
+  message?: string;
+  sentiment?: {
+    score: number;
+    comparative: number;
+    calculation: any[];
+    tokens: string[];
+    words: string[];
+    positive: string[];
+    negative: string[];
+  };
   createdAt?: string;
 };
 
@@ -47,10 +57,10 @@ export default function CreatorProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
-const [saving, setSaving] = useState(false);
-const [form, setForm] = useState<{ name: string; bio: string; walletAddress: string; avatarUrl: string }>({
-  name: '', bio: '', walletAddress: '', avatarUrl: ''
-});
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<{ name: string; bio: string; walletAddress: string; avatarUrl: string }>({
+    name: '', bio: '', walletAddress: '', avatarUrl: ''
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -216,26 +226,49 @@ const [form, setForm] = useState<{ name: string; bio: string; walletAddress: str
           {tips.length > 0 && (
             <ul className="tips-list">
               {tips.slice(0, 20).map((t) => (
-                <li key={t._id} className="tip-item">
-                  <div className="tip-avatar" title={t.senderAddress}>
-                    {t.senderAddress.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="tip-info">
-                    <div className="tip-row">
-                      <span className="tip-addr">
-                        <code title={t.senderAddress}>{t.senderAddress.slice(0, 6)}…{t.senderAddress.slice(-6)}</code>
-                      </span>
-                      <span className="tip-amount">{microToStx(t.amountMicro)} STX</span>
+                <li key={t._id} className="tip-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
+                    <div className="tip-avatar" title={t.senderAddress}>
+                      {t.senderAddress.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="tip-meta">
-                      {t.createdAt && (
-                        <span>{new Date(t.createdAt).toLocaleString()}</span>
-                      )}
-                      {t.txId && (
-                        <a className="tip-link" href={`https://explorer.hiro.so/txid/${t.txId}?chain=mainnet`} target="_blank" rel="noreferrer">tx</a>
-                      )}
+                    <div className="tip-info">
+                      <div className="tip-row">
+                        <span className="tip-addr">
+                          <code title={t.senderAddress}>{t.senderAddress.slice(0, 6)}…{t.senderAddress.slice(-6)}</code>
+                        </span>
+                        <span className="tip-amount">{microToStx(t.amountMicro)} STX</span>
+                      </div>
+                      <div className="tip-meta">
+                        {t.createdAt && (
+                          <span>{new Date(t.createdAt).toLocaleString()}</span>
+                        )}
+                        {t.txId && (
+                          <a className="tip-link" href={`https://explorer.hiro.so/txid/${t.txId}?chain=mainnet`} target="_blank" rel="noreferrer">tx</a>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {t.message && (
+                    <div style={{
+                      marginTop: 4,
+                      padding: '8px 12px',
+                      background: 'rgba(255,255,255,0.03)',
+                      borderRadius: '8px',
+                      width: '100%',
+                      fontSize: '0.9rem',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span style={{ fontStyle: 'italic', color: '#e5e7eb' }}>"{t.message}"</span>
+                      {t.sentiment && (
+                        <span title={`Sentiment Score: ${t.sentiment.score}`} style={{ fontSize: '1.2rem' }}>
+                          {t.sentiment.score > 0 ? '😊' : t.sentiment.score < 0 ? '😔' : '😐'}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

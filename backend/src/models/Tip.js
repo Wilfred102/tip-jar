@@ -7,7 +7,9 @@ const TipSchema = new mongoose.Schema(
     amountMicro: { type: String, required: true },        // string for bigints
     senderAddress: { type: String, required: true },
     txId: { type: String, required: true, unique: true }, // from Stacks tx
-    chain: { type: String, default: 'mainnet' }
+    chain: { type: String, default: 'mainnet' },
+    message: { type: String },
+    sentiment: { type: Object }
   },
   { timestamps: true }
 );

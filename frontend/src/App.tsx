@@ -63,6 +63,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [wcModalOpen, setWcModalOpen] = useState(false);
+  const [message, setMessage] = useState('');
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
 
   const toast = (msg: string) => {
@@ -271,9 +272,35 @@ export default function App() {
         functionArgs: [uintCV(micro)],
         network,
         postConditionMode: 1,
-        onFinish: async () => {
+        onFinish: async (data: any) => {
+          // Record to backend
+          try {
+            const txId = data.txId;
+            // Find creator by address (the one in the contract)
+            const cRes = await fetch(`${BACKEND_API_URL}/api/creators`);
+            const creators = await cRes.json();
+            const creator = creators.find((c: any) => c.walletAddress === 'SP2VHX4R7QMX5SPMGV359YVB9V3GAC645P0Y5YG3C');
+
+            if (creator) {
+              await fetch(`${BACKEND_API_URL}/api/tips`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  creatorId: creator._id,
+                  amountMicro: micro.toString(),
+                  senderAddress: (window as any).StacksProvider?.address || 'Unknown',
+                  txId,
+                  message
+                })
+              });
+            }
+          } catch (e) {
+            console.error('Failed to record tip to backend', e);
+          }
+
           await refresh();
           setLoading(false);
+          setMessage('');
           toast('Tip sent successfully')
         },
         onCancel: () => {
@@ -435,6 +462,14 @@ export default function App() {
                 value={amountStx}
                 onChange={(e) => setAmountStx(e.target.value)}
                 style={{ marginTop: '8px' }}
+              />
+              <div className="label" style={{ marginTop: '12px' }}>Message (optional)</div>
+              <textarea
+                className="input"
+                placeholder="Leave a message for the creator..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                style={{ marginTop: '8px', height: '80px', paddingTop: '10px', resize: 'none' }}
               />
               <div className="actions" style={{ marginTop: '12px' }}>
                 <button
