@@ -312,7 +312,7 @@ export default function Landing() {
         </div>
         <div className="card">
           <h3>Get started</h3>
-          <p className="subtitle">Connect your wallet on the next page, to begin tipping.</p>
+          <p className="subtitle">Click below, to begin tipping.</p>
           <Link to="/app" className="btn btn-primary btn-glow">Get started</Link>
         </div>
       </section>
