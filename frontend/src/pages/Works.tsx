@@ -25,6 +25,8 @@ export default function Works() {
   const [loading, setLoading] = useState(false);
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; workId: string; title: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function loadWorks() {
     setLoading(true);
@@ -40,12 +42,18 @@ export default function Works() {
   }
 
   async function deleteWork(workId: string, title: string) {
-    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
-      return;
-    }
+    setDeleteModal({ show: true, workId, title });
+  }
+
+  async function confirmDelete() {
+    if (!deleteModal) return;
+
+    setDeleteModal(null);
+    setLoading(true);
+    setErrorMessage('');
 
     try {
-      const r = await fetch(`${BACKEND_API_URL}/api/works/${workId}`, {
+      const r = await fetch(`${BACKEND_API_URL}/api/works/${deleteModal.workId}`, {
         method: 'DELETE',
       });
       if (!r.ok) throw new Error('Failed to delete work');
@@ -53,8 +61,10 @@ export default function Works() {
       // Refresh the works list
       await loadWorks();
     } catch (e: any) {
-      alert('Error deleting work: ' + (e.message || 'Unknown error'));
+      setErrorMessage('Error deleting work: ' + (e.message || 'Unknown error'));
       console.error('Delete work error:', e);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -82,7 +92,7 @@ export default function Works() {
       <header className="nav">
         <div className="logo">
           <div className="logo-badge">🖼️</div>
-          <div>Works</div>
+          <div>Creators Works</div>
         </div>
         <div className="actions">
           <Link to="/" className="btn btn-secondary">Home</Link>
@@ -90,9 +100,77 @@ export default function Works() {
         </div>
       </header>
 
+      {errorMessage && (
+        <div style={{
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          margin: '16px 0',
+          color: '#c33'
+        }}>
+          <strong>Error:</strong> {errorMessage}
+          <button 
+            onClick={() => setErrorMessage('')}
+            style={{ 
+              float: 'right', 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontSize: '1.2rem',
+              color: '#c33'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {deleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ 
+            maxWidth: '500px', 
+            margin: '20px',
+            animation: 'fadeIn 0.2s ease-in'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Confirm Deletion</h3>
+            <p>Are you sure you want to delete <strong>"{deleteModal.title}"</strong>?</p>
+            <p style={{ color: '#dc3545', fontSize: '0.875rem' }}>
+              This action cannot be undone. The work and its file will be permanently deleted.
+            </p>
+            <div className="actions" style={{ marginTop: 16 }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setDeleteModal(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={confirmDelete}
+                style={{ backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="hero">
         <div className="hero-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="kicker">Discover</div>
+          <div className="kicker">Discover Creators</div>
           <h1 className="title">Support creators</h1>
           <p className="subtitle">Browse recent uploads and tip creators directly on Stacks mainnet.</p>
         </div>
@@ -123,13 +201,13 @@ export default function Works() {
                   className="tip-link"
                   style={{ fontSize: '0.875rem' }}
                 >
-                  🔗 View external link
+                  🔗 View work link
                 </a>
               </div>
             )}
             <div className="actions" style={{ marginTop: 10 }}>
               <Link className="btn btn-primary" to="/app">Tip this creator</Link>
-              <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More from creator</button>
+              <button className="btn btn-secondary" onClick={() => navigate(`/works?creatorId=${w.creator._id}`)}>More work from creator</button>
               <button
                 className="btn btn-secondary"
                 onClick={() => deleteWork(w._id, w.title)}
@@ -142,7 +220,7 @@ export default function Works() {
         ))}
       </section>
 
-      <footer className="footer">Powered by your Express + MongoDB backend</footer>
+      <footer className="footer">Built on Stacks</footer>
     </div>
   );
 }

@@ -73,7 +73,7 @@ export default function Monitor() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Error Monitor</h1>
               <p className="text-gray-600 mt-1">
-                Real-time error tracking and analytics
+                Real-time error tracking and analytics - data
               </p>
             </div>
             
@@ -116,7 +116,7 @@ export default function Monitor() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-red-900">Error Loading Data</h3>
+                <h3 className="font-semibold text-red-900">Error Loading Realtime Data</h3>
                 <p className="text-red-700 mt-1">{error}</p>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function Monitor() {
           </div>
           
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600">Peak Error Count</h3>
+            <h3 className="text-sm font-medium text-gray-600">Peak Error Count - Data flow</h3>
             <p className="text-3xl font-bold text-orange-600 mt-2">{maxCount}</p>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function Monitor() {
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                <p className="text-lg font-medium">No data available</p>
+                <p className="text-lg font-medium">No raw data available</p>
                 <p className="text-sm mt-1">Error data will appear here when available</p>
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function Monitor() {
         {/* Raw Data Table */}
         {series.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Raw Data</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Raw Real-time Data</h2>
             
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">

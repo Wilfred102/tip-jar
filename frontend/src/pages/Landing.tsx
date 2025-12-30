@@ -47,6 +47,7 @@ export default function Landing() {
   const [recentCount, setRecentCount] = useState<number>(0);
   const [topCreators, setTopCreators] = useState<any[]>([]);
   const [stats, setStats] = useState({ highest: 0n, uniqueTippers: 0, avg: 0n });
+  const [works, setWorks] = useState<any[]>([]);
   const { contractAddress, contractName } = useMemo(() => splitContractId(CONTRACT_ID), []);
   const network = useMemo(() => new StacksMainnet(), []);
 
@@ -207,6 +208,7 @@ export default function Landing() {
             .slice(0, 3);
 
           setTopCreators(sortedCreators);
+          setWorks(works.slice(0, 6)); // Save first 6 works to display
         }
 
       } catch (e) {
@@ -220,11 +222,11 @@ export default function Landing() {
       <header className="nav">
         <div className="logo">
           <div className="logo-badge">💧</div>
-          <div>STX Tip Jar</div>
+          <div>Tip Jar</div>
         </div>
         <div className="actions">
-          <Link to="/creators" className="btn btn-secondary">For creators</Link>
-          <Link to="/app" className="btn btn-primary">Enter App</Link>
+          <Link to="/creators" className="btn btn-secondary">creators</Link>
+          <Link to="/app" className="btn btn-primary">Get Started</Link>
         </div>
       </header>
 
@@ -235,15 +237,15 @@ export default function Landing() {
         <div className="aurora aurora-3" aria-hidden="true" />
 
         <div className="hero-card" style={{ gridColumn: '1 / -1' }}>
-          <div className="kicker">A home for music & art</div>
+          <div className="kicker">A home for the best creators</div>
           <h1 className="title gradient-text">Fuel the creators who move you</h1>
           <p className="subtitle">
-            Tip musicians, visual artists, filmmakers, designers, streamers and more — directly on
+            Tip musicians, visual artists, filmmakers, designers, streamers, writers and more creators — directly on
             Stacks mainnet. Transparent, non-custodial, and instant. Your support, their freedom.
           </p>
           <div className="actions">
-            <Link to="/app" className="btn btn-primary btn-glow">Start tipping</Link>
-            <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Learn about Stacks</a>
+            <Link to="/app" className="btn btn-primary btn-glow">Start tipping creators</Link>
+            <a className="btn btn-secondary" href="https://www.hiro.so/stacks" target="_blank" rel="noreferrer">Learn More</a>
             <a className="btn btn-secondary" href="/works" target="_blank" rel="noreferrer">Browse works</a>
 
           </div>
@@ -251,7 +253,7 @@ export default function Landing() {
           {/* Creative tag marquee */}
           <div className="marquee" style={{ marginTop: 20 }}>
             <div className="marquee-track">
-              {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
+              {['beats', 'visual art', 'live coding', 'articles', 'podcasts', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
                 <span key={tag} className="marquee-item pill">{tag}</span>
               ))}
               {['beats', 'visual art', 'live coding', 'indie film', 'street art', 'photography', '3D', 'podcasts', 'streaming', 'poetry', 'generative', 'dance', 'sound design', 'illustration'].map((tag) => (
@@ -267,14 +269,14 @@ export default function Landing() {
         <div className="spotlight-card">
           <div className="emoji-badge">🎵</div>
           <h3>Music makers</h3>
-          <p className="subtitle">Producers, vocalists, DJs and sound designers receiving direct, on-chain support.</p>
+          <p className="subtitle">Producers, vocalists, Recording Artists and sound designers receiving direct, on-chain support.</p>
           <Link to="/app" className="btn btn-secondary">Tip a musician</Link>
         </div>
         <div className="spotlight-card">
           <div className="emoji-badge">🎨</div>
           <h3>Visual artists</h3>
           <p className="subtitle">Illustrators, painters, street artists, 3D and generative creators — no middlemen.</p>
-          <Link to="/app" className="btn btn-secondary">Tip an artist</Link>
+          <Link to="/app" className="btn btn-secondary">Tip your favorite artist</Link>
         </div>
       </section>
 
@@ -282,34 +284,36 @@ export default function Landing() {
         <div className="card">
           <h3>How it works</h3>
           <ul className="list">
-            <li>🔐 <strong>Smart contract</strong> holds logic: minimum tip, tracking and routing.</li>
-            <li>🔗 <strong>WalletConnect</strong> lets you approve tips from wallets like Xverse.</li>
+            <li>🔐 <strong>COntract</strong> holds logic: minimum tip, tracking and routing.</li>
+            <li>🔗 <strong>WalletConnect</strong> lets you approve tips from wallets like Xverse and other wallets.</li>
             <li>🔎 <strong>Transparent</strong>: tips are settled on-chain, viewable on the explorer.</li>
           </ul>
         </div>
         <div className="card">
           <h3>Why creators love it</h3>
           <ul className="list">
-            <li>👐 <strong>No custody</strong>: funds go from your wallet directly to the creator.</li>
+            <li>👐 <strong>No custody</strong>: funds go from your wallet directly to the creator no middleman.</li>
             <li>🧩 <strong>Composable</strong>: easy to embed in bios, link-in-bio, websites, streams.</li>
-            <li>🛡️ <strong>Open-source</strong> Clarity you can audit.</li>
+            <li>🛡️ <strong>Open-source</strong> Clarity you can audit and contribute to.</li>
           </ul>
         </div>
       </section>
 
       <section className="grid" style={{ marginTop: 16 }}>
         <div className="card">
-          <h3>Features</h3>
+          <h3>Added Features</h3>
           <ul className="list">
-            <li><strong>Read-only stats</strong> show total tips and latest tippers.</li>
+            <li><strong>Updated stats</strong> show total tips and latest tippers.</li>
             <li><strong>Minimum tip</strong> enforced to prevent dust spam.</li>
-            <li><strong>Explorer links</strong> for full transparency.</li>
+            <li><strong>Explorer links</strong> for full transparency and openness.</li>
+            <li><strong>Creator Profile</strong> dedicated page for creators.</li>
+
           </ul>
         </div>
         <div className="card">
           <h3>Get started</h3>
-          <p className="subtitle">Connect your wallet on the next page, set an amount and confirm the transaction.</p>
-          <Link to="/app" className="btn btn-primary btn-glow">Enter App</Link>
+          <p className="subtitle">Connect your wallet on the next page, to begin tipping.</p>
+          <Link to="/app" className="btn btn-primary btn-glow">Get started</Link>
         </div>
       </section>
 
@@ -379,7 +383,108 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="footer">Built with Stacks • WalletConnect enabled</footer>
+      <section style={{ marginTop: 24 }}>
+        <div className="card">
+          <h3>Recent Works</h3>
+          <div className="label">Latest uploads from you favorite creators</div>
+          
+          {works.length === 0 && (
+            <div className="subtitle" style={{ marginTop: 16 }}>No works yet. Be the first to upload!</div>
+          )}
+          
+          {works.length > 0 && (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              gap: '16px',
+              marginTop: '16px'
+            }}>
+              {works.map((work) => (
+                <div 
+                  key={work._id} 
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.02)'
+                  }}
+                >
+                  {work.coverUrl && (
+                    <img 
+                      src={work.coverUrl} 
+                      alt={work.title}
+                      style={{
+                        width: '100%',
+                        height: '160px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        marginBottom: '8px'
+                      }}
+                    />
+                  )}
+                  {!work.coverUrl && work.fileType?.startsWith('image/') && (
+                    <img 
+                      src={`${BACKEND_API_URL}${work.fileUrl}`} 
+                      alt={work.title}
+                      style={{
+                        width: '100%',
+                        height: '160px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        marginBottom: '8px'
+                      }}
+                    />
+                  )}
+                  <h4 style={{ margin: '8px 0', fontSize: '1rem' }}>{work.title}</h4>
+                  <div style={{ fontSize: '0.875rem', color: '#888', marginBottom: '8px' }}>
+                    by {work.creator?.name || 'Unknown'}
+                  </div>
+                  {work.description && (
+                    <p style={{ 
+                      fontSize: '0.875rem', 
+                      color: '#aaa', 
+                      marginBottom: '12px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                      {work.description}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Link 
+                      to="/app" 
+                      className="btn btn-primary" 
+                      style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
+                    >
+                      Tip
+                    </Link>
+                    <Link 
+                      to="/works" 
+                      className="btn btn-secondary"
+                      style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
+                    >
+                      Preview
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {works.length > 0 && (
+            <div style={{ marginTop: '25px', textAlign: 'center' }}>
+              <Link to="/works" className="btn btn-secondary">
+                View all works from creators
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <footer className="footer">Built with Stacks</footer>
     </div>
   );
 }

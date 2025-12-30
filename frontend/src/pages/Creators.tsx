@@ -111,12 +111,12 @@ export default function Creators() {
 
       <section className="hero" style={{ gap: 16 }}>
         <div className="hero-card">
-          <h3 style={{ marginTop: 0 }}>Create creator</h3>
+          <h3 style={{ marginTop: 0 }}>Create An Account</h3>
           <form onSubmit={createCreator}>
             <div className="label">Name</div>
             <input name="name" className="input" required />
 
-            <div className="label" style={{ marginTop: 8 }}>Wallet address (STX)</div>
+            <div className="label" style={{ marginTop: 8 }}>Creator Wallet address (STX)</div>
             <input
               name="walletAddress"
               className="input"
@@ -126,7 +126,7 @@ export default function Creators() {
               title="Must be a valid Stacks address starting with SP or ST"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Avatar URL (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Avatar URL -  (optional)</div>
             <input
               name="avatarUrl"
               className="input"
@@ -134,12 +134,12 @@ export default function Creators() {
               placeholder="https://..."
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Bio (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Creator Bio (optional)</div>
             <textarea
               name="bio"
               className="input"
               rows={3}
-              placeholder="Tell us about yourself..."
+              placeholder="Tell us about yourself and craft..."
             />
 
             <div className="actions" style={{ marginTop: 12 }}>
@@ -151,17 +151,17 @@ export default function Creators() {
         </div>
 
         <div className="hero-card">
-          <h3 style={{ marginTop: 0 }}>Upload a work</h3>
+          <h3 style={{ marginTop: 0 }}>Upload your work</h3>
           <form onSubmit={uploadWork} encType="multipart/form-data">
             <div className="label">Creator</div>
             <select name="creatorId" className="input" required defaultValue="">
-              <option value="" disabled>Select creator</option>
+              <option value="" disabled>Select Creator Account</option>
               {creators.map(c => (
                 <option key={c._id} value={c._id}>{c.name}</option>
               ))}
             </select>
 
-            <div className="label" style={{ marginTop: 8 }}>Title</div>
+            <div className="label" style={{ marginTop: 8 }}>Work Title</div>
             <input
               name="title"
               className="input"
@@ -169,12 +169,12 @@ export default function Creators() {
               placeholder="My awesome work"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Description</div>
+            <div className="label" style={{ marginTop: 8 }}>Work Description</div>
             <textarea
               name="description"
               className="input"
               rows={3}
-              placeholder="Describe your work..."
+              placeholder="Brief Description of your work..."
             />
 
             <div className="label" style={{ marginTop: 8 }}>Cover URL (optional)</div>
@@ -185,7 +185,7 @@ export default function Creators() {
               placeholder="https://..."
             />
 
-            <div className="label" style={{ marginTop: 8 }}>Work URL (optional)</div>
+            <div className="label" style={{ marginTop: 8 }}>Add Work URL (optional)</div>
             <input
               name="workUrl"
               className="input"
@@ -193,7 +193,7 @@ export default function Creators() {
               placeholder="https://... (external link to your work)"
             />
 
-            <div className="label" style={{ marginTop: 8 }}>File</div>
+            <div className="label" style={{ marginTop: 8 }}>Click to Upload File</div>
             <input
               name="file"
               className="input"
@@ -210,7 +210,7 @@ export default function Creators() {
 
             {creators.length === 0 && (
               <div style={{ marginTop: 8, fontSize: '0.875rem', color: '#666' }}>
-                Please create a creator first before uploading works
+                Make sure to create a creator first before uploading works
               </div>
             )}
           </form>
@@ -222,7 +222,7 @@ export default function Creators() {
           <h3>Existing creators</h3>
           {creators.length === 0 && (
             <div className="subtitle">
-              No creators yet. Create one using the form above!
+              No creators yet. Be the first to create an account
             </div>
           )}
           {creators.length > 0 && (
@@ -297,7 +297,7 @@ export default function Creators() {
       </section>
 
       <footer className="footer">
-        Upload works and get tipped on Stacks
+       Make sure to create a creator account first before uploading works and get tipped on Stacks
       </footer>
     </div>
   );
