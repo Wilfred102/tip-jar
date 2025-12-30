@@ -1,14 +1,16 @@
 import { Router } from 'express';
+import Sentiment from 'sentiment';
 import Tip from '../models/Tip.js';
 import Creator from '../models/Creator.js';
 import Work from '../models/Work.js';
 
 const router = Router();
+const sentiment = new Sentiment();
 
 // Record a tip event (called by frontend after tx broadcast/confirm)
 router.post('/', async (req, res) => {
   try {
-    const { creatorId, workId, amountMicro, senderAddress, txId, chain = 'mainnet' } = req.body;
+    const { creatorId, workId, amountMicro, senderAddress, txId, chain = 'mainnet', message } = req.body;
     if (!creatorId || !amountMicro || !senderAddress || !txId) {
       return res.status(400).json({ error: 'creatorId, amountMicro, senderAddress, txId required' });
     }
@@ -21,13 +23,20 @@ router.post('/', async (req, res) => {
       if (!workDoc) return res.status(404).json({ error: 'work not found' });
     }
 
+    let sentimentResult = null;
+    if (message) {
+      sentimentResult = sentiment.analyze(message);
+    }
+
     const tip = await Tip.create({
       creator: creator._id,
       work: workDoc?._id,
       amountMicro: String(amountMicro),
       senderAddress,
       txId,
-      chain
+      chain,
+      message,
+      sentiment: sentimentResult
     });
 
     res.status(201).json(tip);

@@ -418,7 +418,8 @@ export default function Landing() {
                 {
                   title: 'AI Sentiment Analysis',
                   desc: 'Understand the heartbeat of your community with real-time mood tracking and comment analysis.',
-                  icon: '🧠'
+                  icon: '🧠',
+                  live: true
                 },
                 {
                   title: 'Smart Tip Suggestions',
@@ -439,19 +440,36 @@ export default function Landing() {
                 <div key={idx} className="spotlight-card" style={{
                   margin: 0,
                   background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  border: feature.live ? '1px solid rgba(57, 255, 20, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
                   transition: 'transform 0.3s ease, border-color 0.3s ease',
-                  cursor: 'default'
+                  cursor: 'default',
+                  position: 'relative'
                 }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-5px)';
-                    e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.4)';
+                    e.currentTarget.style.borderColor = feature.live ? 'rgba(57, 255, 20, 0.6)' : 'rgba(124, 58, 237, 0.4)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.borderColor = feature.live ? 'rgba(57, 255, 20, 0.3)' : 'rgba(255, 255, 255, 0.05)';
                   }}
                 >
+                  {feature.live && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'linear-gradient(135deg, #39FF14, #00FFA3)',
+                      color: '#0b1020',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      textTransform: 'uppercase'
+                    }}>
+                      Live
+                    </div>
+                  )}
                   <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{feature.icon}</div>
                   <h4 style={{ marginBottom: '8px', color: '#fff' }}>{feature.title}</h4>
                   <p style={{ fontSize: '0.9rem', color: '#aaa', lineHeight: '1.5' }}>{feature.desc}</p>
