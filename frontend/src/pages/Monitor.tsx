@@ -116,7 +116,7 @@ export default function Monitor() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-red-900">Error Loading Realtime Data</h3>
+                <h3 className="font-semibold text-red-900">Error Loading Realtime Data Points</h3>
                 <p className="text-red-700 mt-1">{error}</p>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function Monitor() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600">Total Data Points</h3>
+            <h3 className="text-sm font-medium text-gray-600">Total Data Points Read</h3>
             <p className="text-3xl font-bold text-gray-900 mt-2">{series.length}</p>
           </div>
           
