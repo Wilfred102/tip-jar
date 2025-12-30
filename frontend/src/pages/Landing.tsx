@@ -383,25 +383,104 @@ export default function Landing() {
         </div>
       </section>
 
+      <section style={{ marginTop: 48, marginBottom: 48 }}>
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(30, 64, 175, 0.1) 100%)',
+          border: '1px solid rgba(124, 58, 237, 0.2)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-50px',
+            right: '-50px',
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            zIndex: 0
+          }} />
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div className="kicker" style={{ color: '#a78bfa' }}>Coming Soon</div>
+            <h2 className="title gradient-text" style={{ fontSize: '2.5rem', marginBottom: '16px' }}>The Future is AI-Powered</h2>
+            <p className="subtitle" style={{ maxWidth: '800px', marginBottom: '32px' }}>
+              We're building the next generation of creator tools. Our upcoming AI suite will help you understand your audience,
+              automate engagement, and grow your creative business like never before.
+            </p>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '20px'
+            }}>
+              {[
+                {
+                  title: 'AI Sentiment Analysis',
+                  desc: 'Understand the heartbeat of your community with real-time mood tracking and comment analysis.',
+                  icon: '🧠'
+                },
+                {
+                  title: 'Smart Tip Suggestions',
+                  desc: 'Personalized tipping prompts based on fan engagement and content value.',
+                  icon: '✨'
+                },
+                {
+                  title: 'AI Thank You\'s',
+                  desc: 'Automated, personalized appreciation messages for every supporter, in your unique voice.',
+                  icon: '💌'
+                },
+                {
+                  title: 'Creator Insights AI',
+                  desc: 'Deep analytics and growth strategies tailored specifically to your creative niche.',
+                  icon: '📊'
+                }
+              ].map((feature, idx) => (
+                <div key={idx} className="spotlight-card" style={{
+                  margin: 0,
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  transition: 'transform 0.3s ease, border-color 0.3s ease',
+                  cursor: 'default'
+                }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-5px)';
+                    e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                  }}
+                >
+                  <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{feature.icon}</div>
+                  <h4 style={{ marginBottom: '8px', color: '#fff' }}>{feature.title}</h4>
+                  <p style={{ fontSize: '0.9rem', color: '#aaa', lineHeight: '1.5' }}>{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ marginTop: 24 }}>
         <div className="card">
           <h3>Recent Works</h3>
           <div className="label">Latest uploads from you favorite creators</div>
-          
+
           {works.length === 0 && (
             <div className="subtitle" style={{ marginTop: 16 }}>No works yet. Be the first to upload!</div>
           )}
-          
+
           {works.length > 0 && (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '16px',
               marginTop: '16px'
             }}>
               {works.map((work) => (
-                <div 
-                  key={work._id} 
+                <div
+                  key={work._id}
                   style={{
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: '8px',
@@ -410,8 +489,8 @@ export default function Landing() {
                   }}
                 >
                   {work.coverUrl && (
-                    <img 
-                      src={work.coverUrl} 
+                    <img
+                      src={work.coverUrl}
                       alt={work.title}
                       style={{
                         width: '100%',
@@ -423,8 +502,8 @@ export default function Landing() {
                     />
                   )}
                   {!work.coverUrl && work.fileType?.startsWith('image/') && (
-                    <img 
-                      src={`${BACKEND_API_URL}${work.fileUrl}`} 
+                    <img
+                      src={`${BACKEND_API_URL}${work.fileUrl}`}
                       alt={work.title}
                       style={{
                         width: '100%',
@@ -440,9 +519,9 @@ export default function Landing() {
                     by {work.creator?.name || 'Unknown'}
                   </div>
                   {work.description && (
-                    <p style={{ 
-                      fontSize: '0.875rem', 
-                      color: '#aaa', 
+                    <p style={{
+                      fontSize: '0.875rem',
+                      color: '#aaa',
                       marginBottom: '12px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -454,15 +533,15 @@ export default function Landing() {
                     </p>
                   )}
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link 
-                      to="/app" 
-                      className="btn btn-primary" 
+                    <Link
+                      to="/app"
+                      className="btn btn-primary"
                       style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
                     >
                       Tip
                     </Link>
-                    <Link 
-                      to="/works" 
+                    <Link
+                      to="/works"
                       className="btn btn-secondary"
                       style={{ flex: 1, fontSize: '0.875rem', padding: '8px 12px' }}
                     >
@@ -473,7 +552,7 @@ export default function Landing() {
               ))}
             </div>
           )}
-          
+
           {works.length > 0 && (
             <div style={{ marginTop: '25px', textAlign: 'center' }}>
               <Link to="/works" className="btn btn-secondary">
